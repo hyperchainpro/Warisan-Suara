@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    @page { size: 794px 1123px; margin: 0; }
+    :root {
+      --c-bg: #fdf8ef;        /* cream */
+      --c-text: #2a1a10;      /* deep ink */
+      --c-accent: #a85c32;    /* terracotta */
+      --c-accent-2: #c89545;  /* gold */
+      --c-maroon: #7a3a28;    /* maroon */
+      --c-muted: #6b5a4a;     /* warm muted */
+      --c-line: #7a3a28;
+    }
+    html, body {
+      margin: 0; padding: 0;
+      width: 794px; height: 1123px;
+      background: var(--c-bg);
+      color: var(--c-text);
+      font-family: 'Inter', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    @media screen {
+      html { height: auto; display: flex; justify-content: center; min-height: 100vh; background: #e8e2d3; }
+      body { transform-origin: top center; scale: min(1, calc(100vw / 794), calc(100vh / 1123)); margin: 0 auto; box-shadow: 0 0 60px rgba(0,0,0,0.15); }
+    }
+    .cover {
+      width: 794px; height: 1123px; position: relative; box-sizing: border-box;
+      background: var(--c-bg);
+    }
+    /* Double border frame — institutional formality */
+    .border-frame {
+      position: absolute;
+      top: 56px; left: 40px; right: 40px; bottom: 56px;
+      border: 2.5px solid var(--c-maroon);
+      outline: 1px solid var(--c-maroon);
+      outline-offset: 6px;
+      pointer-events: none;
+    }
+    /* Layer 1 — batik dot grid background (very subtle) */
+    .bg-layer {
+      position: absolute;
+      top: 56px; left: 40px; right: 40px; bottom: 56px;
+      overflow: hidden;
+      z-index: 1;
+      background-image:
+        radial-gradient(circle, rgba(168, 92, 50, 0.06) 1px, transparent 1.5px);
+      background-size: 18px 18px;
+      background-position: 9px 9px;
+    }
+    /* Corner ornaments — small gold squares */
+    .corner {
+      position: absolute;
+      width: 14px; height: 14px;
+      background: var(--c-accent-2);
+      z-index: 2;
+    }
+    .corner-tl { top: 50px; left: 34px; }
+    .corner-tr { top: 50px; right: 34px; }
+    .corner-bl { bottom: 50px; left: 34px; }
+    .corner-br { bottom: 50px; right: 34px; }
+
+    /* Layer 3 — content */
+    .content {
+      position: absolute;
+      top: 56px; left: 40px; right: 40px; bottom: 56px;
+      display: flex; flex-direction: column; align-items: center;
+      padding: 50px 48px 40px 48px;
+      box-sizing: border-box;
+      z-index: 3;
+    }
+    .institution {
+      font-size: 22pt;
+      font-weight: 700;
+      letter-spacing: 5px;
+      font-family: 'Playfair Display', serif;
+      text-align: center;
+      color: var(--c-maroon);
+      max-width: 600px;
+      line-height: 1.2;
+      text-transform: uppercase;
+    }
+    .institution-sub {
+      font-size: 11pt;
+      letter-spacing: 4px;
+      color: var(--c-muted);
+      text-align: center;
+      margin-top: 8px;
+      text-transform: uppercase;
+      font-family: 'Inter', sans-serif;
+    }
+    .thick-divider {
+      width: 64%; height: 2px; background: var(--c-maroon);
+      margin-top: 42px; margin-bottom: 8px;
+      position: relative;
+    }
+    .thick-divider::after {
+      content: '';
+      position: absolute;
+      left: 50%; top: 6px;
+      transform: translateX(-50%);
+      width: 32%; height: 1px;
+      background: var(--c-accent-2);
+    }
+    .doc-type {
+      font-size: 14pt;
+      font-weight: 500;
+      letter-spacing: 5px;
+      text-align: center;
+      margin-top: 32px;
+      color: var(--c-accent);
+      text-transform: uppercase;
+      font-family: 'Inter', sans-serif;
+    }
+    .title-block {
+      margin-top: 30px;
+      text-align: center;
+      max-width: 560px;
+    }
+    .title-product {
+      font-size: 38pt;
+      font-weight: 900;
+      line-height: 1.15;
+      font-family: 'Playfair Display', serif;
+      color: var(--c-maroon);
+      letter-spacing: 1px;
+    }
+    .title-desc {
+      font-size: 13pt;
+      font-weight: 400;
+      line-height: 1.5;
+      font-family: 'Cormorant Garamond', serif;
+      color: var(--c-text);
+      margin-top: 16px;
+      max-width: 520px;
+    }
+    .theme-block {
+      margin-top: 26px;
+      padding: 10px 22px;
+      border-left: 3px solid var(--c-accent);
+      border-right: 3px solid var(--c-accent);
+      text-align: center;
+      max-width: 540px;
+    }
+    .theme-main {
+      font-size: 12pt;
+      font-weight: 600;
+      color: var(--c-maroon);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      font-family: 'Inter', sans-serif;
+    }
+    .theme-sub {
+      font-size: 10.5pt;
+      color: var(--c-muted);
+      margin-top: 4px;
+      font-style: italic;
+      font-family: 'Cormorant Garamond', serif;
+    }
+    .fields-block {
+      width: 480px;
+      margin-top: 30px;
+    }
+    .field-row {
+      display: flex; align-items: baseline;
+      margin-bottom: 12px;
+      font-size: 11pt;
+      font-family: 'Inter', sans-serif;
+    }
+    .field-label {
+      white-space: nowrap;
+      margin-right: 10px;
+      color: var(--c-maroon);
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      font-size: 9.5pt;
+      min-width: 110px;
+    }
+    .field-value {
+      flex: 1;
+      text-align: left;
+      border-bottom: 1px solid rgba(122, 58, 40, 0.45);
+      padding-bottom: 3px; min-height: 16px;
+      color: var(--c-text);
+      font-size: 10.5pt;
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 500;
+    }
+    .footer-area {
+      margin-top: auto;
+      padding-top: 18px;
+      text-align: center;
+      width: 100%;
+    }
+    .year-badge {
+      display: inline-block;
+      padding: 6px 28px;
+      background: var(--c-maroon);
+      color: var(--c-bg);
+      font-size: 13pt;
+      font-weight: 700;
+      letter-spacing: 6px;
+      font-family: 'Playfair Display', serif;
+    }
+    .footer-note {
+      margin-top: 10px;
+      font-size: 8.5pt;
+      color: var(--c-muted);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      font-family: 'Inter', sans-serif;
+    }
+  </style>
+</head>
+<body>
+  <div class="cover">
+    <div class="border-frame"></div>
+    <div class="bg-layer"></div>
+    <div class="corner corner-tl"></div>
+    <div class="corner corner-tr"></div>
+    <div class="corner corner-bl"></div>
+    <div class="corner corner-br"></div>
+
+    <div class="content">
+      <div class="institution">BUDAYA GO! 2026</div>
+      <div class="institution-sub">Kompetisi Inovasi Budaya Indonesia</div>
+
+      <div class="thick-divider"></div>
+
+      <div class="doc-type">Proposal Inovasi Budaya</div>
+
+      <div class="title-block">
+        <div class="title-product">WARISAN<br>SUARA</div>
+        <div class="title-desc">Platform AI untuk Pelestarian Bahasa &amp; Tradisi Lisan Nusantara</div>
+      </div>
+
+      <div class="theme-block">
+        <div class="theme-main">Indonesia Cultural Power</div>
+        <div class="theme-sub">Inventing the Future from Indonesian Culture</div>
+      </div>
+
+      <div class="fields-block">
+        <div class="field-row">
+          <span class="field-label">Kategori</span>
+          <span class="field-value">Inovasi Digital &mdash; Sub-tema #4 Pembelajaran &amp; Edukasi Digital Berbasis Budaya</span>
+        </div>
+        <div class="field-row">
+          <span class="field-label">Ketua Tim</span>
+          <span class="field-value">Febri Rizki, S.Si., M.Si. &mdash; AI Engineer &amp; Web App Developer</span>
+        </div>
+        <div class="field-row">
+          <span class="field-label">Anggota 1</span>
+          <span class="field-value">Oki Handinata, S.Si. &mdash; UI/UX Designer</span>
+        </div>
+        <div class="field-row">
+          <span class="field-label">Anggota 2</span>
+          <span class="field-value">Martha Martinni, S.Si. &mdash; Strategi Startup &amp; Model Bisnis</span>
+        </div>
+        <div class="field-row">
+          <span class="field-label">Asal</span>
+          <span class="field-value">Indonesia</span>
+        </div>
+        <div class="field-row">
+          <span class="field-label">Korespondensi</span>
+          <span class="field-value">warisansuara.id@gmail.com</span>
+        </div>
+      </div>
+
+      <div class="footer-area">
+        <div class="year-badge">2026</div>
+        <div class="footer-note">Dokumen Proposal Resmi &middot; Tahun Anggaran 2026</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

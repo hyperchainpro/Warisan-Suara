@@ -1,0 +1,86 @@
+{
+  "design": {
+    "title": "WARISAN SUARA — Slide Deck BUDAYA GO! 2026 (v2 with mockups)",
+    "style_name": "Earthy Batik Editorial + Phone Mockups",
+    "palette": {
+      "background": "#fdf8ef",
+      "primary": "#7a3a28",
+      "accent": "#c89545",
+      "secondary": "#a85c32"
+    },
+    "typography": {
+      "heading": "Playfair Display (bold serif)",
+      "body": "Manrope (clean sans-serif)",
+      "numeric": "Manrope tabular-nums"
+    },
+    "reference": "Indonesian cultural editorial — batik + soundwave motif + phone-frame mockups embedded"
+  },
+  "global_css_path": "/home/z/my-project/download/slides/global.css",
+  "slides_dir": "/home/z/my-project/download/slides",
+  "language": "id",
+  "speaker_notes": "short",
+  "mockups_dir": "/home/z/my-project/download/slides/mockups",
+  "mockups_cropped": "all cropped to 390x844 (phone viewport) with rounded corners",
+  "slides": [
+    {
+      "title": "WARISAN SUARA — Title Slide",
+      "layout": "cover + phone mockup accent",
+      "output_path": "/home/z/my-project/download/slides/slide_01.html",
+      "task_brief": "COVER SLIDE with phone mockup accent. Cream bg + batik pattern + corner motifs. LEFT 60%: kicker BUDAYA GO! 2026 INDONESIA CULTURAL POWER; display title WARISAN SUARA (Playfair 900, ~96px, maroon); subtitle italic Platform AI untuk Pelestarian Bahasa Tradisi Lisan Nusantara; gold accent-bar; meta KOMPETISI INOVASI BUDAYA INDONESIA KEMENTERIAN KEBUDAYAAN RI; team block (3 members) — Febri Rizki S.Si. M.Si. (KETUA / AI Engineer Web App Developer), Oki Handinata S.Si. (ANGGOTA / UI/UX Designer), Martha Martinni S.Si. (ANGGOTA / Strategi Startup Model Bisnis). RIGHT 40%: phone-frame mockup of Beranda (mockups/01-beranda.png) ~200x432 with maroon frame + gold halo + WS corner mark + caption TAMPILAN BERANDA + mini soundwave. Footer p.1/10. Speaker notes Indonesian 3-5 sentences: introduce team (Oki as UI/UX Designer), WARISAN SUARA PWA AI untuk pelestarian bahasa tradisi lisan, 5-tab bottom nav, Inovasi Digital sub-tema #4, presentasi 5-7 menit."
+    },
+    {
+      "title": "Latar Belakang & Permasalahan",
+      "layout": "stats + problem grid",
+      "output_path": "/home/z/my-project/download/slides/slide_02.html",
+      "task_brief": "Slide background + problem. NO mockup. Kicker 02 LATAR BELAKANG. Headline Bahasa Nusantara Menyusut Tradisi Lisan Punah Bersamanya. 3 BIG STAT CARDS (700+ bahasa, 25% terancam, 4 bahasa terancam di prototype: Ternate/Cirebon/Gorontalo/Nias). 2-col problem grid (Tantangan Aktual 4 bullets / Mengapa Sekarang 3 bullets). Footer p.2/10. Speaker notes 3-5 sentences."
+    },
+    {
+      "title": "Penyelesaian yang Sudah Ada + Rencana",
+      "layout": "comparison + roadmap split",
+      "output_path": "/home/z/my-project/download/slides/slide_03.html",
+      "task_brief": "Slide status + plan. NO mockup. Kicker 03 STATUS RENCANA. Headline Dari Kekosongan ke Platform AI Aktif. Top horizontal band 3 existing-solutions mini-cards (Kamus digital, Aplikasi bahasa daerah terbatas, ASR bahasa daerah belum ada di Indonesia). Below: 2 plan columns (RENCANA JANGKA PENDEK 6-12 BLN / RENCANA JANGKA PANJANG 3-5 THN). Footer p.3/10."
+    },
+    {
+      "title": "Unsur Kebudayaan Indonesia",
+      "layout": "3-card grid + stats",
+      "output_path": "/home/z/my-project/download/slides/slide_04.html",
+      "task_brief": "Slide akar budaya. NO mockup. Kicker 04 AKAR BUDAYA. Headline Tiga Objek Pemajuan Kebudayaan dalam Satu Platform. 3 large cards (#01 Tradisi Lisan / #02 Manuskrip / #08 Bahasa). Stats band: 20 tradisi lisan terdokumentasi 7 daerah asal 10 bahasa daerah. Footer p.4/10."
+    },
+    {
+      "title": "Solusi, Fungsi & Cara Kerja",
+      "layout": "5 phone mockups grid + bottom nav indicator",
+      "output_path": "/home/z/my-project/download/slides/slide_05.html",
+      "task_brief": "KEY SLIDE with 5 phone-frame mockups. Kicker 05 SOLUSI FUNGSI CARA KERJA. Headline PWA AI dengan 5 Fitur Inti. Subhead Mobile-first dapat di-install offline-capable Bottom tab nav ala aplikasi modern 5 layar utama berikut. MAIN: 5 phone-frame mockups in a single row (each 168x363px maroon frame + gold halo + notch). Mockups (left to right): (1) Peta Bahasa mockups/02-peta-bahasa.png caption Bahasa; (2) Studio Rekam mockups/04-studio-rekam.png caption Rekam; (3) Modul Belajar mockups/06-belajar-modul.png caption Belajar; (4) Tutor AI mockups/08-tutor-ai.png caption Belajar; (5) Arsip Tradisi mockups/09-arsip-tradisi.png caption Arsip. Each phone has feature number badge (01-05) + title above. Below: maroon 5-TAB BOTTOM NAV indicator bar showing all 5 tabs (Beranda active / Bahasa / Rekam / Belajar / Arsip) with Material icons + labels, plus PWA Installable Offline-ready meta. Footer p.5/10. Speaker notes 3-5 sentences: jelaskan 5 fitur inti dengan mockup nyata, bottom tab navigation 5-tab, PWA installable offline-capable, UI/UX dirancang UI/UX Designer tim."
+    },
+    {
+      "title": "Sasaran Pengguna & Pasar",
+      "layout": "4-quadrant B2G/B2B/B2C/B2B",
+      "output_path": "/home/z/my-project/download/slides/slide_06.html",
+      "task_brief": "Slide market. NO mockup. Kicker 06 PASAR SASARAN. Headline Empat Segmen Pasar Multi-Channel. QUAD GRID 2x2 (B2G Pemda / B2B Sekolah / B2C Individu / B2B Riset). Stat band 128.580.000 total penutur terdata. Footer p.6/10."
+    },
+    {
+      "title": "Keunikan dan Nilai Tambah",
+      "layout": "5 numbered rows + 2 phone mockups as visual proof",
+      "output_path": "/home/z/my-project/download/slides/slide_07.html",
+      "task_brief": "Slide differentiation + 2 phone mockups as visual proof. Kicker 07 KEUNIKAN NILAI TAMBAH. Headline Lima Nilai Tambah yang Tidak Tersaingi. Subhead Belum ada kompetitor yang menggabungkan AI ASR multi-objek budaya dan UX mobile-first PWA di Indonesia. LAYOUT 2-col split: LEFT 58% — 5 numbered value rows compact (gold number + icon + title + 1-line proof): (01) auto_awesome AI Whisper ASR pertama di Indonesia; (02) hub Tiga Objek Pemajuan Kebudayaan; (03) phone_iphone Mobile-first PWA bottom tab nav; (04) cloud Cloudflare full-stack edge; (05) verified_user Anti-bot + server-side verification. Below rows: TECH STACK chips (Whisper ASR, Cloudflare Workers AI, D1, R2, PWA, Turnstile). RIGHT 42% — BUKTI VISUAL APLIKASI label + 2 phone-frame mockups side by side (each 156x337px): mockups/05-studio-form-turnstile.png caption Anti-Bot Turnstile Studio Rekam form + mockups/10-tradisi-detail.png caption Detail Tradisi Dialog konten mendalam. Footer p.7/10. Speaker notes 3-5 sentences: 5 nilai tambah unggul + bukti visual Turnstile aktif di Studio Rekam + kedalaman konten Detail Tradisi, UI dirancang UI/UX Designer tim."
+    },
+    {
+      "title": "Dampak & Kondisi Aktual Produk",
+      "layout": "split impact + kondisi + 2 phone mockups",
+      "output_path": "/home/z/my-project/download/slides/slide_08.html",
+      "task_brief": "KEY SLIDE showcasing UI depth. Kicker 08 DAMPAK KONDISI AKTUAL. Headline Dampak Nyata Prototype Siap Pakai. Subhead Dialog interaktif mendalam pemutakhiran TTS pelafalan arsip tradisi sudah aktif di prototype. LAYOUT 2-col: LEFT 50% — DAMPAK label + 3 impact cards stacked (Budaya/Ekonomi/Sosial with icons public/trending_up/diversity_3) + KONDISI AKTUAL PRODUK maroon card with 4-stat grid (10 bahasa, 20 tradisi, 8 modul, 5 fitur AI). RIGHT 50% — KEDALAMAN UI INTERAKTIF label + 2 phone-frame mockups side by side (each 168x363px): mockups/03-language-detail.png caption Detail Bahasa Dialog metadata + TTS + mockups/07-lesson-player.png caption Lesson Player Dialog pemutakhiran TTS. Below mockups: cream-deep caption Tampilan aplikasi mobile PWA bottom tab navigation with phone_iphone icon. Footer p.8/10. Speaker notes 3-5 sentences: 3 dampak + kondisi prototype (10/20/8/5) + 2 mockup dialog interaktif menunjukkan kedalaman UI dirancang UI/UX Designer."
+    },
+    {
+      "title": "Model Bisnis & Roadmap",
+      "layout": "BMC mini + roadmap timeline",
+      "output_path": "/home/z/my-project/download/slides/slide_09.html",
+      "task_brief": "Slide business model + roadmap. NO mockup. Kicker 09 BISNIS ROADMAP. Headline Model Bisnis BMC + Roadmap 5 Tahun. LEFT 55% BMC 9-block mini grid. RIGHT 45% Roadmap vertical timeline 3 milestone (6-12 BLN / 1-2 THN / 3-5 THN). Footer p.9/10."
+    },
+    {
+      "title": "Penutup & Cultural Power",
+      "layout": "closing + phone mockup accent",
+      "output_path": "/home/z/my-project/download/slides/slide_10.html",
+      "task_brief": "CLOSING slide with phone mockup accent. Cream bg + 4 batik corner motifs + soundwave strip at bottom. LAYOUT 2-col: LEFT 32% — phone-frame mockup of Modul Belajar (mockups/06-belajar-modul.png) ~200x432 with maroon frame + gold halo behind, caption MODUL BELAJAR Pengalaman belajar adaptif. RIGHT 68% — hero composition: kicker BUDAYA GO! 2026 INDONESIA CULTURAL POWER, massive display title WARISAN SUARA (Playfair 900 ~76px maroon), gold accent-bar, tagline italic Menyelamatkan khazanah lisan Nusantara sebelum hilang, 2-pillar row (LEFT maroon VISI — platform AI terdepan untuk pelestarian bahasa tradisi lisan; RIGHT cream-deep gold-bordered CULTURAL POWER INDONESIA — representasi kontekstual kolaborasi ASEAN serumpun membuka masa depan budaya), big quote MEMBUKA MASA DEPAN BUDAYA INDONESIA (gold uppercase Playfair), contact row — WS monogram + warisansuara.id@gmail.com + live demo URL https://warisan-suara.pages.dev. Footer p.10/10. Speaker notes 3-5 sentences: visi WARISAN SUARA + mockup Modul Belajar sebagai bukti pengalaman belajar adaptif + cultural power Indonesia + undang juri ke live demo warisan-suara.pages.dev + kontak warisansuara.id@gmail.com."
+    }
+  ]
+}

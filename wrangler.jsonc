@@ -1,0 +1,53 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "warisan-suara",
+  "compatibility_date": "2025-01-15",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": ".open-next/worker.js",
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "observability": {
+    "enabled": true
+  },
+  "ai": {
+    "binding": "AI"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "warisan-suara-db",
+      "database_id": "ea5cf699-a500-418d-a254-3532a0b6beda",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "AUDIO_BUCKET",
+      "bucket_name": "warisan-suara-audio"
+    }
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "CACHE",
+      "id": "795b8ba2de8347b2bc730cb88004def1"
+    }
+  ],
+  "vars": {
+    "ENVIRONMENT": "production",
+    "USE_CLOUDFLARE_AI": "1",
+    "CF_AI_LLM": "@cf/meta/llama-3.1-8b-instruct",
+    "CF_AI_ASR": "@cf/openai/whisper",
+    "CF_AI_TTS": "@cf/myshell-ai/melotts"
+  },
+  "routes": [
+    {
+      "pattern": "warisansuara.id",
+      "custom_domain": true
+    }
+  ],
+  "metrics": {
+    "enable": true
+  }
+}

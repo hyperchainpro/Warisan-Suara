@@ -1,0 +1,184 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+/* WARISAN SUARA - Tema Budaya Nusantara
+   Palette earthy/batik-inspired: terracotta, gold, maroon, cream
+   NO indigo/blue - sesuai aturan styling */
+:root {
+  --radius: 0.625rem;
+  /* Cream/ivory background */
+  --background: oklch(0.98 0.012 80);
+  --foreground: oklch(0.22 0.03 35);
+  --card: oklch(1 0.008 80);
+  --card-foreground: oklch(0.22 0.03 35);
+  --popover: oklch(1 0.008 80);
+  --popover-foreground: oklch(0.22 0.03 35);
+  /* Terracotta - inspired by batik brown/earthy clay */
+  --primary: oklch(0.52 0.16 45);
+  --primary-foreground: oklch(0.98 0.012 80);
+  /* Warm beige */
+  --secondary: oklch(0.94 0.025 70);
+  --secondary-foreground: oklch(0.3 0.04 40);
+  --muted: oklch(0.94 0.02 75);
+  --muted-foreground: oklch(0.5 0.03 50);
+  /* Gold accent - royal Sumatran/Javanese gold */
+  --accent: oklch(0.82 0.14 75);
+  --accent-foreground: oklch(0.25 0.05 45);
+  /* Deep maroon red - traditional Java red */
+  --destructive: oklch(0.45 0.18 25);
+  --border: oklch(0.88 0.03 65);
+  --input: oklch(0.9 0.025 70);
+  --ring: oklch(0.52 0.16 45);
+  /* Chart colors - batik palette */
+  --chart-1: oklch(0.52 0.16 45);  /* terracotta */
+  --chart-2: oklch(0.7 0.12 75);   /* gold */
+  --chart-3: oklch(0.4 0.12 145);  /* batik green */
+  --chart-4: oklch(0.5 0.18 25);   /* maroon */
+  --chart-5: oklch(0.6 0.1 200);   /* teal accent */
+  --sidebar: oklch(0.96 0.018 75);
+  --sidebar-foreground: oklch(0.22 0.03 35);
+  --sidebar-primary: oklch(0.52 0.16 45);
+  --sidebar-primary-foreground: oklch(0.98 0.012 80);
+  --sidebar-accent: oklch(0.92 0.04 70);
+  --sidebar-accent-foreground: oklch(0.25 0.05 45);
+  --sidebar-border: oklch(0.88 0.03 65);
+  --sidebar-ring: oklch(0.52 0.16 45);
+}
+
+.dark {
+  /* Deep warm brown-black background */
+  --background: oklch(0.18 0.02 40);
+  --foreground: oklch(0.95 0.02 75);
+  --card: oklch(0.23 0.025 40);
+  --card-foreground: oklch(0.95 0.02 75);
+  --popover: oklch(0.23 0.025 40);
+  --popover-foreground: oklch(0.95 0.02 75);
+  /* Brighter terracotta for dark mode */
+  --primary: oklch(0.68 0.17 45);
+  --primary-foreground: oklch(0.18 0.02 40);
+  --secondary: oklch(0.3 0.03 45);
+  --secondary-foreground: oklch(0.95 0.02 75);
+  --muted: oklch(0.28 0.025 45);
+  --muted-foreground: oklch(0.72 0.03 65);
+  /* Brighter gold */
+  --accent: oklch(0.75 0.14 75);
+  --accent-foreground: oklch(0.2 0.03 40);
+  --destructive: oklch(0.55 0.2 25);
+  --border: oklch(1 0 0 / 12%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.68 0.17 45);
+  --chart-1: oklch(0.68 0.17 45);
+  --chart-2: oklch(0.78 0.14 75);
+  --chart-3: oklch(0.6 0.13 145);
+  --chart-4: oklch(0.6 0.19 25);
+  --chart-5: oklch(0.65 0.11 200);
+  --sidebar: oklch(0.23 0.025 40);
+  --sidebar-foreground: oklch(0.95 0.02 75);
+  --sidebar-primary: oklch(0.68 0.17 45);
+  --sidebar-primary-foreground: oklch(0.18 0.02 40);
+  --sidebar-accent: oklch(0.3 0.03 45);
+  --sidebar-accent-foreground: oklch(0.95 0.02 75);
+  --sidebar-border: oklch(1 0 0 / 12%);
+  --sidebar-ring: oklch(0.68 0.17 45);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "ss01", "cv01";
+  }
+}
+
+/* Custom utilities for cultural motifs */
+@layer utilities {
+  .text-gradient-batik {
+    background: linear-gradient(135deg, oklch(0.52 0.16 45) 0%, oklch(0.7 0.12 75) 50%, oklch(0.5 0.18 25) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .bg-batik-pattern {
+    background-image: 
+      radial-gradient(circle at 20% 50%, oklch(0.52 0.16 45 / 0.08) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, oklch(0.7 0.12 75 / 0.08) 0%, transparent 50%),
+      radial-gradient(circle at 40% 80%, oklch(0.5 0.18 25 / 0.06) 0%, transparent 50%);
+  }
+  .glass-card {
+    background: oklch(1 0.008 80 / 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+  .dark .glass-card {
+    background: oklch(0.23 0.025 40 / 0.7);
+  }
+}
+
+/* Custom scrollbar - batik themed */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: oklch(0.94 0.02 75);
+}
+.dark ::-webkit-scrollbar-track {
+  background: oklch(0.23 0.025 40);
+}
+::-webkit-scrollbar-thumb {
+  background: oklch(0.52 0.16 45 / 0.5);
+  border-radius: 5px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: oklch(0.52 0.16 45 / 0.7);
+}
+
+/* Smooth scroll for anchor navigation */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
+}

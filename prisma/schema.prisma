@@ -1,0 +1,148 @@
+// WARISAN SUARA - Prisma Schema
+// Cloudflare-ready: SQLite untuk dev lokal, D1 untuk production (via @prisma/adapter-d1)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Master data: bahasa daerah Nusantara
+model Language {
+  id            String   @id @default(cuid())
+  code          String   @unique // e.g. "sun", "jav", "ban", "min", "bug"
+  name          String   // e.g. "Bahasa Sunda"
+  region        String   // e.g. "Jawa Barat"
+  province      String   // e.g. "Jawa Barat"
+  latitude      Float?
+  longitude     Float?
+  speakers      Int      // jumlah penutur perkiraan
+  vitality      Vitality // status kehidupan bahasa
+  isoCode       String?  // ISO 639-3
+  description   String
+  greetingText  String   // sapaan khas
+  greetingAudio String?  // URL audio sapaan
+  samplePhrase  String   // frasa contoh
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  recordings    Recording[]
+  modules       LearningModule[]
+  traditions    OralTradition[]
+  tutorSessions TutorSession[]
+}
+
+enum Vitality {
+  AMAN           // Safe (penutur banyak, diturunkan ke anak)
+  TERTENTU       // Vulnerable (sebagian anak tak lagi gunakan)
+  TERANCAM       // Definitely endangered
+  KRITIS         // Severely endangered
+  HAMPIR_PUNAH   // Critically endangered
+}
+
+// Rekaman audio dari penutur asli / masyarakat
+model Recording {
+  id             String   @id @default(cuid())
+  languageId     String
+  language       Language @relation(fields: [languageId], references: [id])
+  title          String
+  speakerName    String
+  speakerAge     Int?
+  speakerRole    String?  // e.g. "Tetua adat", "Guru", "Anak muda"
+  audioUrl       String   // local /uploads/... atau R2 URL di prod
+  durationSec    Int
+  transcriptText String?  // hasil ASR
+  translationId  String?  // terjemahan ke bahasa Indonesia
+  transcriptStatus String @default("pending") // pending|processing|done
+  context        String?  // konteks penggunaan
+  tags           String?  // comma-separated tags
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([languageId])
+}
+
+// Modul pembelajaran adaptif per bahasa
+model LearningModule {
+  id          String   @id @default(cuid())
+  languageId  String
+  language    Language @relation(fields: [languageId], references: [id])
+  title       String
+  description String
+  level       String   // A1|A2|B1
+  orderIdx    Int
+  totalLessons Int     @default(5)
+  lessonsJson String   // JSON array of {title, phrase, translation, audioUrl, notes}
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  progress    UserProgress[]
+
+  @@index([languageId])
+}
+
+// Progres belajar pengguna (anonim, device-based)
+model UserProgress {
+  id          String   @id @default(cuid())
+  deviceId    String   // identifier per browser/device
+  moduleId    String
+  module      LearningModule @relation(fields: [moduleId], references: [id])
+  lessonIdx   Int      @default(0)
+  completed   Boolean  @default(false)
+  lastStudied DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([deviceId, moduleId])
+  @@index([deviceId])
+}
+
+// Arsip tradisi lisan: pantun, mantra, nyanyian rakyat, dll
+model OralTradition {
+  id          String   @id @default(cuid())
+  languageId  String
+  language    Language @relation(fields: [languageId], references: [id])
+  type        String   // pantun|mantra|nyanyian|cerita_rakyat|peribahasa
+  title       String
+  text        String   // teks asli bahasa daerah
+  translation String   // terjemahan bahasa Indonesia
+  meaning     String?  // makna/konteks
+  audioUrl    String?  // rekaman audio (opsional)
+  region      String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([languageId])
+  @@index([type])
+}
+
+// Sesi tutor AI untuk tracking konteks chat
+model TutorSession {
+  id          String   @id @default(cuid())
+  languageId  String
+  language    Language @relation(fields: [languageId], references: [id])
+  deviceId    String
+  messagesJson String  // JSON array of {role, content, ts}
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([deviceId])
+  @@index([languageId])
+}
+
+// Log penggunaan fitur AI (untuk analytics & showcase)
+model AiUsageLog {
+  id          String   @id @default(cuid())
+  feature     String   // asr|translate|tts|tutor
+  languageId  String?
+  deviceId    String?
+  durationMs  Int?
+  success     Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  @@index([feature])
+  @@index([createdAt])
+}

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>WARISAN SUARA — Cover</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="global.css">
+<style>
+  .cover-wrap { padding: 48px 64px 56px; height: 720px; display: flex; gap: 28px; }
+  .col-left { flex: 0 0 60%; display: flex; flex-direction: column; justify-content: center; }
+  .col-right { flex: 0 0 40%; position: relative; display: flex; align-items: center; justify-content: center; }
+  .display-title { font-size: 96px; line-height: 0.96; letter-spacing: -1.5px; font-weight: 900; color: var(--primary); }
+  .display-title .ampersand { color: var(--accent); }
+  .subtitle-italic { font-family: var(--font-alt); font-style: italic; font-weight: 600; font-size: 24px; color: var(--ink-soft); line-height: 1.32; }
+  .team-row { display: flex; flex-direction: column; gap: 8px; }
+  .team-member { padding: 9px 0; border-top: 1px solid var(--line); }
+  .team-member:first-child { border-top: none; }
+  .team-name { font-family: var(--font-body); font-weight: 700; font-size: 14px; color: var(--primary); }
+  .team-role { font-family: var(--font-body); font-weight: 400; font-size: 12px; color: var(--muted); letter-spacing: 0.3px; }
+  .team-tag { display: inline-block; padding: 2px 8px; background: var(--accent); color: var(--primary); font-weight: 700; font-size: 10px; letter-spacing: 1.2px; border-radius: 3px; margin-right: 6px; text-transform: uppercase; }
+
+  /* Phone mockup hero on right */
+  .phone-stage { position: relative; width: 360px; height: 600px; display: flex; align-items: center; justify-content: center; }
+  .phone-halo {
+    position: absolute; width: 340px; height: 340px; border-radius: 50%;
+    background: radial-gradient(circle at 50% 50%, rgba(122,58,40,0.18) 0, rgba(168,92,50,0.08) 50%, transparent 70%);
+    top: 50%; left: 50%; transform: translate(-50%, -50%);
+    z-index: 0;
+  }
+  .phone-halo::before {
+    content: ""; position: absolute; inset: 28px; border-radius: 50%;
+    background: repeating-conic-gradient(from 0deg, rgba(200,149,69,0.10) 0 8deg, transparent 8deg 16deg);
+  }
+  .phone-frame {
+    position: relative; width: 200px; height: 432px;
+    background: var(--primary);
+    border-radius: 28px;
+    padding: 6px;
+    box-shadow: 0 0 0 4px var(--bg-soft), 0 0 0 5px var(--accent),
+                0 18px 40px -10px rgba(44,24,16,0.45), 0 8px 24px -6px rgba(122,58,40,0.35);
+    z-index: 2;
+  }
+  .phone-frame img {
+    width: 100%; height: 100%; object-fit: cover; object-position: top center;
+    border-radius: 22px; display: block;
+  }
+  .phone-notch {
+    position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
+    width: 60px; height: 14px; background: var(--primary); border-radius: 0 0 10px 10px; z-index: 3;
+  }
+  .phone-caption {
+    position: absolute; bottom: -42px; left: 50%; transform: translateX(-50%);
+    font-family: var(--font-body); font-weight: 700; font-size: 11px; color: var(--terracotta);
+    letter-spacing: 1.6px; text-transform: uppercase; white-space: nowrap;
+  }
+  .phone-caption .cap-bar { display: block; width: 24px; height: 2px; background: var(--accent); margin: 6px auto 0; }
+
+  /* WS mark top-right of col-right */
+  .ws-corner-mark {
+    position: absolute; top: 10px; right: 4px;
+    width: 44px; height: 44px; border-radius: 10px;
+    background: var(--primary); color: var(--accent);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-family: var(--font-heading); font-weight: 900; font-size: 18px; letter-spacing: -0.5px;
+    z-index: 4;
+  }
+
+  /* soundwave decoration along bottom of col-right */
+  .mini-wave {
+    position: absolute; left: 0; right: 0; bottom: 8px;
+    display: flex; align-items: flex-end; justify-content: center; gap: 3px; height: 18px;
+    z-index: 1; opacity: 0.65;
+  }
+  .mini-wave .wb { width: 3px; background: var(--accent); border-radius: 2px; }
+  .mini-wave .wb.alt { background: var(--terracotta); }
+</style>
+</head>
+<body>
+<div class="slide batik-bg">
+  <!-- batik corner motifs -->
+  <div class="batik-corner" style="top:0; right:0; transform: scaleX(-1) scaleY(-1);"></div>
+  <div class="batik-corner" style="bottom:38px; left:0;"></div>
+
+  <div class="cover-wrap">
+    <div class="col-left">
+      <div class="kicker" style="margin-bottom: 16px;">BUDAYA GO! 2026 · INDONESIA CULTURAL POWER</div>
+      <h1 class="display-title">WARISAN<br><span class="ampersand">SUARA</span></h1>
+      <div class="accent-bar" style="margin: 20px 0 16px;"></div>
+      <p class="subtitle-italic" style="max-width: 560px; margin-bottom: 24px;">Platform AI untuk Pelestarian Bahasa &amp; Tradisi Lisan Nusantara</p>
+
+      <div class="t-micro" style="margin-bottom: 14px;">KOMPETISI INOVASI BUDAYA INDONESIA · KEMENTERIAN KEBUDAYAAN RI</div>
+
+      <div class="team-row" style="max-width: 580px;">
+        <div class="team-member">
+          <div class="team-name"><span class="team-tag">KETUA</span>Febri Rizki, S.Si., M.Si.</div>
+          <div class="team-role">AI Engineer &amp; Web App Developer</div>
+        </div>
+        <div class="team-member">
+          <div class="team-name"><span class="team-tag">ANGGOTA</span>Oki Handinata, S.Si.</div>
+          <div class="team-role">UI/UX Designer</div>
+        </div>
+        <div class="team-member">
+          <div class="team-name"><span class="team-tag">ANGGOTA</span>Martha Martinni, S.Si.</div>
+          <div class="team-role">Strategi Startup &amp; Model Bisnis</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-right">
+      <span class="ws-corner-mark">WS</span>
+      <div class="phone-stage">
+        <div class="phone-halo"></div>
+        <div class="phone-frame">
+          <div class="phone-notch"></div>
+          <img src="mockups/01-beranda.png" alt="Tampilan Beranda aplikasi WARISAN SUARA">
+        </div>
+        <div class="phone-caption">TAMPILAN BERANDA<span class="cap-bar"></span></div>
+      </div>
+      <div class="mini-wave">
+        <div class="wb" style="height: 30%;"></div>
+        <div class="wb alt" style="height: 55%;"></div>
+        <div class="wb" style="height: 80%;"></div>
+        <div class="wb alt" style="height: 100%;"></div>
+        <div class="wb" style="height: 65%;"></div>
+        <div class="wb alt" style="height: 85%;"></div>
+        <div class="wb" style="height: 45%;"></div>
+        <div class="wb alt" style="height: 70%;"></div>
+        <div class="wb" style="height: 25%;"></div>
+        <div class="wb alt" style="height: 50%;"></div>
+        <div class="wb" style="height: 75%;"></div>
+        <div class="wb alt" style="height: 35%;"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="brand"><span class="mark">WS</span> WARISAN SUARA · BUDAYA GO! 2026</div>
+    <div class="meta">Inovasi Digital · Sub-tema #4</div>
+    <div class="pageno">01 / 10</div>
+  </div>
+
+  <aside data-notes class="hidden">
+    Selamat siang Dewan Juri. Perkenalkan Tim WARISAN SUARA — Febri Rizki sebagai Ketua dan AI Engineer &amp; Web App Developer, Oki Handinata sebagai UI/UX Designer yang merancang tampilan mobile aplikasi, dan Martha Martinni sebagai Strategi Startup &amp; Model Bisnis. Kami mengembangkan platform AI berbasis PWA untuk pelestarian bahasa dan tradisi lisan Nusantara dengan 5-tab bottom navigation: Beranda, Bahasa, Rekam, Belajar, dan Arsip. Kompetisi ini diikuti dalam kategori Inovasi Digital sub-tema #4. Presentasi kami 5-7 menit, fokus pada urgensi, solusi, dampak, dan model bisnis.
+  </aside>
+</div>
+</body>
+</html>

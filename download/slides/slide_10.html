@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>WARISAN SUARA — Penutup</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="global.css">
+<style>
+  .pad { padding: 48px 72px 56px; height: 720px; display: flex; flex-direction: row; gap: 32px; align-items: center; position: relative; }
+
+  /* LEFT: phone mockup */
+  .mockup-col {
+    flex: 0 0 32%; display: flex; flex-direction: column; align-items: center; gap: 12px; position: relative;
+  }
+  .mockup-stage { position: relative; display: flex; align-items: center; justify-content: center; }
+  .mockup-halo {
+    position: absolute; width: 280px; height: 280px; border-radius: 50%;
+    background: radial-gradient(circle at 50% 50%, rgba(122,58,40,0.18) 0, rgba(168,92,50,0.08) 50%, transparent 70%);
+    top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 0;
+  }
+  .mockup-halo::before {
+    content: ""; position: absolute; inset: 24px; border-radius: 50%;
+    background: repeating-conic-gradient(from 0deg, rgba(200,149,69,0.10) 0 8deg, transparent 8deg 16deg);
+  }
+  .phone-frame {
+    position: relative; width: 200px; height: 432px;
+    background: var(--primary); border-radius: 28px; padding: 6px;
+    box-shadow: 0 0 0 4px var(--bg-soft), 0 0 0 5px var(--accent),
+                0 18px 40px -10px rgba(44,24,16,0.45), 0 8px 24px -6px rgba(122,58,40,0.35);
+    z-index: 2;
+  }
+  .phone-frame img {
+    width: 100%; height: 100%; object-fit: cover; object-position: top center;
+    border-radius: 22px; display: block;
+  }
+  .phone-notch {
+    position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
+    width: 56px; height: 12px; background: var(--primary); border-radius: 0 0 10px 10px; z-index: 3;
+  }
+  .mc-caption {
+    font-family: var(--font-body); font-weight: 700; font-size: 11px;
+    color: var(--terracotta); text-align: center; line-height: 1.25;
+    letter-spacing: 1.4px; text-transform: uppercase;
+  }
+  .mc-caption small { display: block; font-weight: 500; font-size: 11px; color: var(--muted); letter-spacing: 0.3px; text-transform: none; margin-top: 2px; font-style: italic; font-family: var(--font-alt); }
+
+  /* RIGHT: hero content */
+  .hero-col { flex: 1; display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
+
+  .hero-title {
+    font-family: var(--font-heading); font-weight: 900; font-size: 76px;
+    color: var(--primary); line-height: 1; letter-spacing: -2px;
+  }
+  .hero-title .amp { color: var(--accent); }
+  .tagline {
+    font-family: var(--font-alt); font-style: italic; font-weight: 600; font-size: 20px;
+    color: var(--ink-soft); line-height: 1.3; max-width: 600px;
+  }
+
+  .pillar-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; width: 100%; max-width: 640px; margin-top: 4px; }
+  .pillar {
+    border-radius: 12px; padding: 13px 18px; display: flex; flex-direction: column; gap: 4px;
+  }
+  .pillar-maroon { background: var(--primary); color: var(--bg); }
+  .pillar-cream { background: #fffdf6; border: 2px solid var(--accent); color: var(--ink); }
+  .pillar-label { font-family: var(--font-body); font-weight: 700; font-size: 10px; letter-spacing: 1.6px; text-transform: uppercase; }
+  .pillar-maroon .pillar-label { color: var(--gold-light); }
+  .pillar-cream .pillar-label { color: var(--terracotta); }
+  .pillar-text { font-family: var(--font-body); font-weight: 500; font-size: 12.5px; line-height: 1.4; }
+  .pillar-maroon .pillar-text { color: rgba(253,248,239,0.95); }
+  .pillar-cream .pillar-text { color: var(--ink-soft); }
+
+  .big-quote {
+    font-family: var(--font-heading); font-weight: 800; font-size: 24px;
+    color: var(--accent); letter-spacing: 1.5px; text-transform: uppercase; line-height: 1.1;
+    margin-top: 4px;
+  }
+
+  .contact-row {
+    display: flex; align-items: center; gap: 12px; margin-top: 2px; flex-wrap: wrap;
+  }
+  .ws-mono {
+    width: 40px; height: 40px; border-radius: 10px; background: var(--accent);
+    color: var(--primary); display: inline-flex; align-items: center; justify-content: center;
+    font-family: var(--font-heading); font-weight: 900; font-size: 16px; letter-spacing: -0.5px;
+  }
+  .contact-email {
+    display: flex; align-items: center; gap: 5px;
+    font-family: var(--font-body); font-weight: 600; font-size: 13px; color: var(--primary);
+  }
+  .contact-email .material-icons { font-size: 16px; color: var(--terracotta); }
+  .contact-demo {
+    display: flex; align-items: center; gap: 5px;
+    font-family: var(--font-body); font-weight: 600; font-size: 13px; color: var(--terracotta);
+    background: var(--bg-deep); padding: 6px 10px; border-radius: 8px;
+  }
+  .contact-demo .material-icons { font-size: 16px; color: var(--primary); }
+  .contact-divider { width: 1px; height: 24px; background: var(--line); }
+
+  /* soundwave decorative strip */
+  .wave-strip {
+    position: absolute; left: 0; right: 0; bottom: 38px; height: 16px;
+    display: flex; align-items: flex-end; justify-content: center; gap: 3px; padding: 0 24px;
+    opacity: 0.55;
+  }
+  .wave-strip .wb { width: 3px; background: var(--accent); border-radius: 2px; }
+  .wave-strip .wb.alt { background: var(--terracotta); opacity: 0.7; }
+</style>
+</head>
+<body>
+<div class="slide batik-bg">
+  <div class="batik-corner" style="top:0; right:0; transform: scaleX(-1) scaleY(-1);"></div>
+  <div class="batik-corner" style="top:0; left:0;"></div>
+  <div class="batik-corner" style="bottom:38px; left:0; transform: scaleX(-1);"></div>
+
+  <div class="pad">
+    <!-- LEFT: phone mockup of Modul Belajar -->
+    <div class="mockup-col">
+      <div class="mockup-stage">
+        <div class="mockup-halo"></div>
+        <div class="phone-frame">
+          <div class="phone-notch"></div>
+          <img src="mockups/06-belajar-modul.png" alt="Modul Belajar aplikasi WARISAN SUARA">
+        </div>
+      </div>
+      <div class="mc-caption">MODUL BELAJAR<small>Pengalaman belajar adaptif</small></div>
+    </div>
+
+    <!-- RIGHT: hero content -->
+    <div class="hero-col">
+      <div class="kicker">BUDAYA GO! 2026 · INDONESIA CULTURAL POWER</div>
+
+      <h1 class="hero-title">WARISAN <span class="amp">SUARA</span></h1>
+      <div class="accent-bar"></div>
+      <p class="tagline">Menyelamatkan khazanah lisan Nusantara sebelum hilang.</p>
+
+      <div class="pillar-row">
+        <div class="pillar pillar-maroon">
+          <div class="pillar-label">VISI</div>
+          <div class="pillar-text">Platform AI terdepan untuk pelestarian bahasa &amp; tradisi lisan Nusantara.</div>
+        </div>
+        <div class="pillar pillar-cream">
+          <div class="pillar-label">CULTURAL POWER INDONESIA</div>
+          <div class="pillar-text">Representasi kontekstual · Kolaborasi ASEAN serumpun · Membuka masa depan budaya.</div>
+        </div>
+      </div>
+
+      <div class="big-quote">MEMBUKA MASA DEPAN BUDAYA INDONESIA</div>
+
+      <div class="contact-row">
+        <span class="ws-mono">WS</span>
+        <span class="contact-email"><i class="material-icons">mail</i>warisansuara.id@gmail.com</span>
+        <span class="contact-divider"></span>
+        <span class="contact-demo"><i class="material-icons">open_in_new</i>warisan-suara.pages.dev</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- decorative wave strip -->
+  <div class="wave-strip">
+    <div class="wb" style="height: 25%;"></div>
+    <div class="wb alt" style="height: 50%;"></div>
+    <div class="wb" style="height: 70%;"></div>
+    <div class="wb alt" style="height: 90%;"></div>
+    <div class="wb" style="height: 100%;"></div>
+    <div class="wb alt" style="height: 80%;"></div>
+    <div class="wb" style="height: 60%;"></div>
+    <div class="wb alt" style="height: 40%;"></div>
+    <div class="wb" style="height: 55%;"></div>
+    <div class="wb alt" style="height: 75%;"></div>
+    <div class="wb" style="height: 90%;"></div>
+    <div class="wb alt" style="height: 65%;"></div>
+    <div class="wb" style="height: 45%;"></div>
+    <div class="wb alt" style="height: 30%;"></div>
+    <div class="wb" style="height: 50%;"></div>
+    <div class="wb alt" style="height: 70%;"></div>
+    <div class="wb" style="height: 85%;"></div>
+    <div class="wb alt" style="height: 60%;"></div>
+    <div class="wb" style="height: 40%;"></div>
+    <div class="wb alt" style="height: 25%;"></div>
+    <div class="wb" style="height: 35%;"></div>
+    <div class="wb alt" style="height: 55%;"></div>
+    <div class="wb" style="height: 75%;"></div>
+    <div class="wb alt" style="height: 90%;"></div>
+    <div class="wb" style="height: 100%;"></div>
+    <div class="wb alt" style="height: 80%;"></div>
+    <div class="wb" style="height: 60%;"></div>
+    <div class="wb alt" style="height: 40%;"></div>
+    <div class="wb" style="height: 25%;"></div>
+  </div>
+
+  <div class="footer">
+    <div class="brand"><span class="mark">WS</span> WARISAN SUARA · BUDAYA GO! 2026</div>
+    <div class="meta">Penutup · Cultural Power</div>
+    <div class="pageno">10 / 10</div>
+  </div>
+
+  <aside data-notes class="hidden">
+    Kami menutup dengan visi WARISAN SUARA — platform AI terdepan untuk pelestarian bahasa dan tradisi lisan Nusantara. Mockup Modul Belajar di samping adalah bukti nyata pengalaman belajar adaptif yang dirancang UI/UX Designer tim kami. Cultural Power Indonesia di dunia: representasi budaya yang kontekstual, kolaborasi ASEAN serumpun, dan membuka masa depan budaya Indonesia. Kami mengundang Dewan Juri untuk mengunjungi live demo di warisan-suara.pages.dev dan menghubungi kami di warisansuara.id@gmail.com. Terima kasih.
+  </aside>
+</div>
+</body>
+</html>

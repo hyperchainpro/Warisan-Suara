@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>WARISAN SUARA — Keunikan</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="global.css">
+<style>
+  .pad { padding: 36px 56px 50px; height: 720px; display: flex; flex-direction: column; }
+
+  .head-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; }
+  .head-row h1 { font-size: 36px; line-height: 1.1; }
+  .head-row .sub { font-family: var(--font-body); font-weight: 400; font-size: 13px; color: var(--ink-soft); line-height: 1.45; max-width: 360px; text-align: right; }
+
+  /* Body split: 5 rows on left, 2 phone mockups on right */
+  .body-split { display: grid; grid-template-columns: 1.35fr 1fr; gap: 22px; margin-top: 16px; flex: 1; min-height: 0; }
+
+  .uniq-grid { display: flex; flex-direction: column; gap: 7px; }
+  .uniq-row {
+    background: #fffdf6; border: 1px solid var(--line); border-radius: 10px;
+    padding: 9px 14px; display: grid; grid-template-columns: 40px 36px 1fr;
+    gap: 10px; align-items: center;
+  }
+  .uniq-num {
+    font-family: var(--font-heading); font-weight: 900; font-size: 22px;
+    color: var(--accent); letter-spacing: -1px; line-height: 1;
+  }
+  .uniq-icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: var(--bg-deep); color: var(--primary);
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .uniq-icon .material-icons { font-size: 18px; }
+  .uniq-body { display: flex; flex-direction: column; gap: 1px; }
+  .uniq-title { font-family: var(--font-heading); font-weight: 700; font-size: 14px; color: var(--primary); line-height: 1.15; }
+  .uniq-proof { font-family: var(--font-body); font-weight: 400; font-size: 11.5px; color: var(--ink-soft); line-height: 1.35; }
+
+  /* Right column: 2 phone mockups side by side */
+  .mockup-col {
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .mockup-col-label {
+    font-family: var(--font-body); font-weight: 700; font-size: 10px;
+    letter-spacing: 1.6px; text-transform: uppercase; color: var(--terracotta);
+  }
+  .mockup-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; flex: 1; align-items: start; }
+  .mc-cell { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .phone-frame {
+    position: relative; width: 156px; height: 337px;
+    background: var(--primary);
+    border-radius: 22px;
+    padding: 5px;
+    box-shadow: 0 0 0 2px var(--bg-soft), 0 0 0 3px rgba(200,149,69,0.55),
+                0 10px 22px -8px rgba(44,24,16,0.40), 0 4px 10px -3px rgba(122,58,40,0.28);
+  }
+  .phone-frame img {
+    width: 100%; height: 100%; object-fit: cover; object-position: top center;
+    border-radius: 18px; display: block;
+  }
+  .phone-notch {
+    position: absolute; top: 6px; left: 50%; transform: translateX(-50%);
+    width: 44px; height: 9px; background: var(--primary); border-radius: 0 0 7px 7px; z-index: 3;
+  }
+  .mc-caption {
+    font-family: var(--font-body); font-weight: 700; font-size: 11px;
+    color: var(--primary); text-align: center; line-height: 1.25;
+  }
+  .mc-caption small { display: block; font-weight: 500; font-size: 10px; color: var(--muted); letter-spacing: 0.3px; }
+
+  /* Tech chips compact */
+  .tech-chips {
+    background: var(--bg-deep); border-radius: 10px; padding: 8px 16px;
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 10px;
+  }
+  .tech-chips .tc-label { font-family: var(--font-body); font-weight: 700; font-size: 10px; color: var(--terracotta); letter-spacing: 1.4px; text-transform: uppercase; margin-right: 2px; }
+  .chip {
+    background: #fffdf6; border: 1px solid var(--line); border-radius: 12px;
+    padding: 3px 10px; font-family: var(--font-body); font-weight: 600; font-size: 11px;
+    color: var(--primary); letter-spacing: 0.3px;
+  }
+  .chip.gold { background: var(--accent); color: var(--primary); border-color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="slide batik-bg">
+  <div class="batik-corner" style="top:0; right:0; transform: scaleX(-1) scaleY(-1); opacity: 0.5;"></div>
+
+  <div class="pad">
+    <div class="kicker">07 · KEUNIKAN &amp; NILAI TAMBAH</div>
+    <div class="head-row" style="margin-top: 8px;">
+      <h1 class="h-h1">Lima Nilai Tambah yang Tidak Tersaingi</h1>
+      <p class="sub">Belum ada kompetitor yang menggabungkan AI ASR, multi-objek budaya, dan UX mobile-first PWA di Indonesia.</p>
+    </div>
+
+    <div class="body-split">
+      <!-- LEFT: 5 numbered value rows -->
+      <div class="uniq-grid">
+        <div class="uniq-row">
+          <div class="uniq-num">01</div>
+          <div class="uniq-icon"><i class="material-icons">auto_awesome</i></div>
+          <div class="uniq-body">
+            <div class="uniq-title">AI Whisper ASR untuk bahasa daerah</div>
+            <div class="uniq-proof">Pertama di Indonesia — belum ada kompetitor aktif.</div>
+          </div>
+        </div>
+        <div class="uniq-row">
+          <div class="uniq-num">02</div>
+          <div class="uniq-icon"><i class="material-icons">hub</i></div>
+          <div class="uniq-body">
+            <div class="uniq-title">Tiga Objek Pemajuan Kebudayaan sekaligus</div>
+            <div class="uniq-proof">Tradisi lisan + manuskrip + bahasa terintegrasi.</div>
+          </div>
+        </div>
+        <div class="uniq-row">
+          <div class="uniq-num">03</div>
+          <div class="uniq-icon"><i class="material-icons">phone_iphone</i></div>
+          <div class="uniq-body">
+            <div class="uniq-title">Mobile-first PWA bottom tab nav</div>
+            <div class="uniq-proof">UX ala aplikasi modern, installable, offline.</div>
+          </div>
+        </div>
+        <div class="uniq-row">
+          <div class="uniq-num">04</div>
+          <div class="uniq-icon"><i class="material-icons">cloud</i></div>
+          <div class="uniq-body">
+            <div class="uniq-title">Cloudflare full-stack edge</div>
+            <div class="uniq-proof">D1 + R2 + Workers AI + Pages + Turnstile.</div>
+          </div>
+        </div>
+        <div class="uniq-row">
+          <div class="uniq-num">05</div>
+          <div class="uniq-icon"><i class="material-icons">verified_user</i></div>
+          <div class="uniq-body">
+            <div class="uniq-title">Anti-bot + server-side verification</div>
+            <div class="uniq-proof">Cloudflare Turnstile menjaga integritas korpus.</div>
+          </div>
+        </div>
+
+        <div class="tech-chips">
+          <div class="tc-label">TECH STACK</div>
+          <span class="chip gold">Whisper ASR</span>
+          <span class="chip">Cloudflare Workers AI</span>
+          <span class="chip">D1</span>
+          <span class="chip">R2</span>
+          <span class="chip">PWA</span>
+          <span class="chip">Turnstile</span>
+        </div>
+      </div>
+
+      <!-- RIGHT: 2 phone mockups as visual proof -->
+      <div class="mockup-col">
+        <div class="mockup-col-label">BUKTI VISUAL APLIKASI</div>
+        <div class="mockup-pair">
+          <div class="mc-cell">
+            <div class="phone-frame">
+              <div class="phone-notch"></div>
+              <img src="mockups/05-studio-form-turnstile.png" alt="Cloudflare Turnstile di Studio Rekam">
+            </div>
+            <div class="mc-caption">Anti-Bot Turnstile<small>Studio Rekam form</small></div>
+          </div>
+          <div class="mc-cell">
+            <div class="phone-frame">
+              <div class="phone-notch"></div>
+              <img src="mockups/10-tradisi-detail.png" alt="Detail Tradisi dialog">
+            </div>
+            <div class="mc-caption">Detail Tradisi<small>Dialog konten mendalam</small></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="brand"><span class="mark">WS</span> WARISAN SUARA · BUDAYA GO! 2026</div>
+    <div class="meta">Keunikan</div>
+    <div class="pageno">07 / 10</div>
+  </div>
+
+  <aside data-notes class="hidden">
+    Lima nilai tambah WARISAN SUARA yang tidak tersaingi. Pertama, AI Whisper ASR untuk bahasa daerah — pertama di Indonesia. Kedua, tiga Objek Pemajuan Kebudayaan dalam satu platform. Ketiga, mobile-first PWA dengan bottom tab nav. Keempat, full-stack Cloudflare edge dengan D1, R2, Workers AI, Pages, dan Turnstile. Kelima, anti-bot Turnstile dengan server-side verification yang terbukti aktif di Studio Rekam seperti terlihat di mockup kiri. Mockup kanan menunjukkan kedalaman konten pada dialog Detail Tradisi — bukti UX yang dirancang UI/UX Designer tim kami.
+  </aside>
+</div>
+</body>
+</html>

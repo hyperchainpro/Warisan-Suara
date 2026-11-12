@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>WARISAN SUARA — Model Bisnis & Roadmap</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="global.css">
+<style>
+  .pad { padding: 44px 64px 52px; height: 720px; display: flex; flex-direction: column; }
+  .split { display: grid; grid-template-columns: 1.25fr 1fr; gap: 22px; margin-top: 14px; flex: 1; }
+
+  .bmc-title { font-family: var(--font-body); font-weight: 700; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--terracotta); margin-bottom: 8px; }
+  .bmc-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr);
+    gap: 6px; height: 460px;
+  }
+  .bmc-tile {
+    background: var(--bg-deep); border: 1px solid var(--line); border-radius: 8px;
+    padding: 8px 10px; display: flex; flex-direction: column; gap: 2px;
+  }
+  .bmc-label { font-family: var(--font-body); font-weight: 700; font-size: 9px; letter-spacing: 0.9px; text-transform: uppercase; color: var(--terracotta); line-height: 1.2; }
+  .bmc-text { font-family: var(--font-body); font-weight: 500; font-size: 11px; color: var(--ink); line-height: 1.32; }
+  .bmc-tile.hi { background: var(--accent); border-color: var(--accent); }
+  .bmc-tile.hi .bmc-label { color: var(--primary); }
+  .bmc-tile.hi .bmc-text { color: var(--primary); font-weight: 600; }
+
+  .roadmap-title { font-family: var(--font-body); font-weight: 700; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--terracotta); margin-bottom: 10px; }
+  .roadmap { display: flex; flex-direction: column; gap: 12px; position: relative; }
+  .roadmap::before {
+    content: ""; position: absolute; left: 16px; top: 12px; bottom: 12px;
+    width: 2px; background: var(--accent); opacity: 0.4;
+  }
+  .ms { display: flex; gap: 14px; align-items: flex-start; position: relative; z-index: 2; }
+  .ms-dot {
+    width: 34px; height: 34px; border-radius: 50%; background: var(--accent);
+    color: var(--primary); display: inline-flex; align-items: center; justify-content: center;
+    flex-shrink: 0; font-family: var(--font-heading); font-weight: 900; font-size: 11px;
+    border: 3px solid var(--bg); box-shadow: 0 0 0 1px var(--accent);
+  }
+  .ms-card {
+    background: #fffdf6; border: 1px solid var(--line); border-radius: 10px;
+    padding: 12px 16px; flex: 1; display: flex; flex-direction: column; gap: 4px;
+  }
+  .ms-badge { font-family: var(--font-body); font-weight: 700; font-size: 10px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--terracotta); }
+  .ms-text { font-family: var(--font-body); font-weight: 500; font-size: 13px; color: var(--ink-soft); line-height: 1.4; }
+</style>
+</head>
+<body>
+<div class="slide batik-bg">
+  <div class="batik-corner" style="top:0; right:0; transform: scaleX(-1) scaleY(-1); opacity: 0.5;"></div>
+
+  <div class="pad">
+    <div class="kicker">09 · MODEL BISNIS &amp; ROADMAP</div>
+    <h1 class="h-h1" style="margin-top: 8px;">Model Bisnis BMC + Roadmap 5 Tahun</h1>
+
+    <div class="split">
+      <!-- LEFT: BMC -->
+      <div>
+        <div class="bmc-title">BUSINESS MODEL CANVAS · 9 ELEMEN</div>
+        <div class="bmc-grid">
+          <div class="bmc-tile">
+            <div class="bmc-label">Key Partners</div>
+            <div class="bmc-text">Pemda · Kemendikbud · Komunitas adat · Universitas</div>
+          </div>
+          <div class="bmc-tile">
+            <div class="bmc-label">Key Activities</div>
+            <div class="bmc-text">Rekaman lapangan · Training ASR · Pengembangan fitur</div>
+          </div>
+          <div class="bmc-tile hi">
+            <div class="bmc-label">Value Props</div>
+            <div class="bmc-text">Pelestarian aktif + akses instan bahasa daerah</div>
+          </div>
+          <div class="bmc-tile">
+            <div class="bmc-label">Key Resources</div>
+            <div class="bmc-text">Korpus bahasa · Model ASR · Tim ahli</div>
+          </div>
+          <div class="bmc-tile">
+            <div class="bmc-label">Channels</div>
+            <div class="bmc-text">PWA web + mobile + API partner</div>
+          </div>
+          <div class="bmc-tile">
+            <div class="bmc-label">Relationships</div>
+            <div class="bmc-text">Komunitas tetua + edukator + riset</div>
+          </div>
+          <div class="bmc-tile">
+            <div class="bmc-label">Customer Segments</div>
+            <div class="bmc-text">B2G pemda · B2B sekolah · B2C individu · B2B riset</div>
+          </div>
+          <div class="bmc-tile">
+            <div class="bmc-label">Cost Structure</div>
+            <div class="bmc-text">Riset lapangan · Infra Cloudflare · Tim teknis</div>
+          </div>
+          <div class="bmc-tile hi">
+            <div class="bmc-label">Revenue Streams</div>
+            <div class="bmc-text">License pemda · Langganan sekolah · Freemium B2C · API access</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Roadmap -->
+      <div>
+        <div class="roadmap-title">ROADMAP · 3 FASE</div>
+        <div class="roadmap">
+          <div class="ms">
+            <div class="ms-dot">01</div>
+            <div class="ms-card">
+              <div class="ms-badge">6-12 BULAN</div>
+              <div class="ms-text">50+ penutur pilot, migrasi Cloudflare penuh.</div>
+            </div>
+          </div>
+          <div class="ms">
+            <div class="ms-dot">02</div>
+            <div class="ms-card">
+              <div class="ms-badge">1-2 TAHUN</div>
+              <div class="ms-text">Integrasi pemda, mobile native (Capacitor), 20+ bahasa.</div>
+            </div>
+          </div>
+          <div class="ms">
+            <div class="ms-dot">03</div>
+            <div class="ms-card">
+              <div class="ms-badge">3-5 TAHUN</div>
+              <div class="ms-text">100+ bahasa, sertifikasi Kemendikbud, ekspansi ASEAN.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="brand"><span class="mark">WS</span> WARISAN SUARA · BUDAYA GO! 2026</div>
+    <div class="meta">Bisnis &amp; Roadmap</div>
+    <div class="pageno">09 / 10</div>
+  </div>
+
+  <aside data-notes class="hidden">
+    Business Model Canvas kami sembilan elemen: customer segments B2G pemda, B2B sekolah, B2C individu, B2B riset. Value proposition: pelestarian aktif plus akses instan bahasa daerah. Empat revenue stream: license pemda, langganan sekolah, freemium B2C, dan API access. Roadmap tiga fase: 6-12 bulan validasi 50+ penutur pilot dan migrasi Cloudflare penuh. 1-2 tahun integrasi pemda, mobile native Capacitor, 20+ bahasa. 3-5 tahun 100+ bahasa, sertifikasi Kemendikbud, ekspansi ASEAN.
+  </aside>
+</div>
+</body>
+</html>

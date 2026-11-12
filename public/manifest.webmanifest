@@ -1,0 +1,53 @@
+{
+  "name": "Warisan Suara — Pelestarian Bahasa & Tradisi Lisan Nusantara",
+  "short_name": "Warisan Suara",
+  "description": "Platform AI untuk mendokumentasikan, mempelajari, dan mewariskan bahasa daerah serta tradisi lisan Nusantara yang terancam punah.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#fdf8ef",
+  "theme_color": "#a85c32",
+  "lang": "id-ID",
+  "dir": "ltr",
+  "categories": ["education", "productivity", "social"],
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Rekam Tradisi",
+      "short_name": "Rekam",
+      "url": "/?action=record",
+      "description": "Rekam suara penutur asli bahasa daerah"
+    },
+    {
+      "name": "Belajar Bahasa",
+      "short_name": "Belajar",
+      "url": "/?action=learn",
+      "description": "Mulai pembelajaran bahasa daerah"
+    },
+    {
+      "name": "Tutor AI",
+      "short_name": "Tutor",
+      "url": "/?action=tutor",
+      "description": "Chat dengan AI tutor bahasa daerah"
+    }
+  ]
+}

@@ -1,0 +1,1424 @@
+     1→#!/usr/bin/env python3
+     2→# -*- coding: utf-8 -*-
+     3→"""
+     4→Proposal WARISAN SUARA - BUDAYA GO! 2026
+     5→Body PDF generator (ReportLab Report production line).
+     6→Indonesian language. Earthy/batik palette.
+     7→"""
+     8→import os, sys, hashlib
+     9→
+    10→# Allow importing pdf skill helpers (install_font_fallback)
+    11→PDF_SKILL_DIR = '/home/z/my-project/skills/pdf'
+    12→sys.path.insert(0, os.path.join(PDF_SKILL_DIR, 'scripts'))
+    13→
+    14→from reportlab.lib.pagesizes import A4
+    15→from reportlab.lib.units import mm, inch
+    16→from reportlab.lib import colors
+    17→from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT, TA_JUSTIFY
+    18→from reportlab.lib.styles import ParagraphStyle
+    19→from reportlab.platypus import (
+    20→    SimpleDocTemplate, Paragraph, Spacer, PageBreak, Table, TableStyle,
+    21→    KeepTogether, HRFlowable, CondPageBreak, Image, ListFlowable, ListItem
+    22→)
+    23→from reportlab.platypus.tableofcontents import TableOfContents
+    24→from reportlab.pdfbase import pdfmetrics
+    25→from reportlab.pdfbase.ttfonts import TTFont
+    26→from reportlab.pdfbase.pdfmetrics import registerFontFamily
+    27→
+    28→# ─────────────────────────────────────────────────────────────────────────
+    29→# Earthy / Batik Palette (user-specified brand palette)
+    30→# ─────────────────────────────────────────────────────────────────────────
+    31→CREAM       = colors.HexColor('#fdf8ef')   # page background tint
+    32→PAGE_BG     = colors.HexColor('#fdf8ef')
+    33→SECTION_BG  = colors.HexColor('#f7efe0')
+    34→CARD_BG     = colors.HexColor('#f4ead7')
+    35→TABLE_STRIPE = colors.HexColor('#f4ead7')
+    36→HEADER_FILL = colors.HexColor('#7a3a28')   # maroon — table headers
+    37→COVER_BLOCK = colors.HexColor('#7a3a28')
+    38→BORDER      = colors.HexColor('#c89545')   # gold — borders
+    39→ICON        = colors.HexColor('#a85c32')   # terracotta
+    40→ACCENT      = colors.HexColor('#a85c32')   # terracotta — primary accent
+    41→ACCENT_2    = colors.HexColor('#c89545')   # gold — secondary accent
+    42→ACCENT_3    = colors.HexColor('#7a3a28')   # maroon — tertiary accent
+    43→TEXT_PRIMARY = colors.HexColor('#2a1a10')
+    44→TEXT_MUTED   = colors.HexColor('#6b5a4a')
+    45→TABLE_HEADER_TEXT = colors.white
+    46→
+    47→# ─────────────────────────────────────────────────────────────────────────
+    48→# Font Registration
+    49→# ─────────────────────────────────────────────────────────────────────────
+    50→FONT_DIR = '/usr/share/fonts'
+    51→
+    52→pdfmetrics.registerFont(TTFont('FreeSerif',            f'{FONT_DIR}/truetype/freefont/FreeSerif.ttf'))
+    53→pdfmetrics.registerFont(TTFont('FreeSerif-Bold',       f'{FONT_DIR}/truetype/freefont/FreeSerifBold.ttf'))
+    54→pdfmetrics.registerFont(TTFont('FreeSerif-Italic',     f'{FONT_DIR}/truetype/freefont/FreeSerifItalic.ttf'))
+    55→pdfmetrics.registerFont(TTFont('FreeSerif-BoldItalic', f'{FONT_DIR}/truetype/freefont/FreeSerifBoldItalic.ttf'))
+    56→pdfmetrics.registerFont(TTFont('FreeSans',             f'{FONT_DIR}/truetype/freefont/FreeSans.ttf'))
+    57→pdfmetrics.registerFont(TTFont('FreeSans-Bold',        f'{FONT_DIR}/truetype/freefont/FreeSansBold.ttf'))
+    58→pdfmetrics.registerFont(TTFont('FreeSans-Italic',      f'{FONT_DIR}/truetype/freefont/FreeSansOblique.ttf'))
+    59→pdfmetrics.registerFont(TTFont('DejaVuSans',           f'{FONT_DIR}/truetype/dejavu/DejaVuSansMono.ttf'))
+    60→
+    61→registerFontFamily('FreeSerif',
+    62→                   normal='FreeSerif', bold='FreeSerif-Bold',
+    63→                   italic='FreeSerif-Italic', boldItalic='FreeSerif-BoldItalic')
+    64→registerFontFamily('FreeSans',
+    65→                   normal='FreeSans', bold='FreeSans-Bold',
+    66→                   italic='FreeSans-Italic', boldItalic='FreeSans-Bold')
+    67→registerFontFamily('DejaVuSans', normal='DejaVuSans', bold='DejaVuSans')
+    68→
+    69→# Install fallback (handles any character FreeSerif lacks)
+    70→try:
+    71→    from pdf import install_font_fallback
+    72→    install_font_fallback()
+    73→except Exception as e:
+    74→    print(f'[warn] install_font_fallback skipped: {e}')
+    75→
+    76→# ─────────────────────────────────────────────────────────────────────────
+    77→# Page geometry: A4 + 2.5cm margins (per user requirement)
+    78→# ─────────────────────────────────────────────────────────────────────────
+    79→LEFT_MARGIN = 25 * mm
+    80→RIGHT_MARGIN = 25 * mm
+    81→TOP_MARGIN = 25 * mm
+    82→BOTTOM_MARGIN = 25 * mm
+    83→PAGE_W, PAGE_H = A4
+    84→CONTENT_W = PAGE_W - LEFT_MARGIN - RIGHT_MARGIN  # ≈ 545pt
+    85→
+    86→# ─────────────────────────────────────────────────────────────────────────
+    87→# Paragraph styles
+    88→# ─────────────────────────────────────────────────────────────────────────
+    89→SERIF = 'FreeSerif'
+    90→SERIF_B = 'FreeSerif-Bold'
+    91→SANS = 'FreeSans'
+    92→SANS_B = 'FreeSans-Bold'
+    93→
+    94→style_h1 = ParagraphStyle(
+    95→    name='H1', fontName=SERIF_B, fontSize=18, leading=24,
+    96→    textColor=ACCENT_3, spaceBefore=18, spaceAfter=8,
+    97→    alignment=TA_LEFT,
+    98→)
+    99→style_h2 = ParagraphStyle(
+   100→    name='H2', fontName=SERIF_B, fontSize=13.5, leading=18,
+   101→    textColor=ACCENT, spaceBefore=12, spaceAfter=5,
+   102→    alignment=TA_LEFT,
+   103→)
+   104→style_h3 = ParagraphStyle(
+   105→    name='H3', fontName=SANS_B, fontSize=11.5, leading=15,
+   106→    textColor=ACCENT_3, spaceBefore=8, spaceAfter=3,
+   107→    alignment=TA_LEFT,
+   108→)
+   109→style_body = ParagraphStyle(
+   110→    name='Body', fontName=SERIF, fontSize=10.5, leading=16,
+   111→    textColor=TEXT_PRIMARY, alignment=TA_JUSTIFY,
+   112→    spaceBefore=0, spaceAfter=8, firstLineIndent=14,
+   113→)
+   114→style_body_nofirst = ParagraphStyle(
+   115→    name='BodyNoFirst', fontName=SERIF, fontSize=10.5, leading=16,
+   116→    textColor=TEXT_PRIMARY, alignment=TA_JUSTIFY,
+   117→    spaceBefore=0, spaceAfter=8,
+   118→)
+   119→style_kicker = ParagraphStyle(
+   120→    name='Kicker', fontName=SANS_B, fontSize=8.5, leading=12,
+   121→    textColor=ACCENT, alignment=TA_LEFT, spaceAfter=2,
+   122→)
+   123→style_quote = ParagraphStyle(
+   124→    name='Quote', fontName='FreeSerif-Italic', fontSize=10.5, leading=16,
+   125→    textColor=ACCENT_3, alignment=TA_LEFT, leftIndent=18, rightIndent=18,
+   126→    borderColor=ACCENT, borderWidth=0, borderPadding=0,
+   127→    spaceBefore=4, spaceAfter=10,
+   128→)
+   129→style_bullet = ParagraphStyle(
+   130→    name='Bullet', fontName=SERIF, fontSize=10.5, leading=15,
+   131→    textColor=TEXT_PRIMARY, alignment=TA_LEFT, leftIndent=18,
+   132→    bulletIndent=4, spaceAfter=4,
+   133→)
+   134→style_caption = ParagraphStyle(
+   135→    name='Caption', fontName='FreeSerif-Italic', fontSize=9, leading=12,
+   136→    textColor=TEXT_MUTED, alignment=TA_CENTER, spaceBefore=4, spaceAfter=10,
+   137→)
+   138→style_tcell = ParagraphStyle(
+   139→    name='TCell', fontName=SERIF, fontSize=9.5, leading=13,
+   140→    textColor=TEXT_PRIMARY, alignment=TA_LEFT,
+   141→)
+   142→style_tcell_c = ParagraphStyle(
+   143→    name='TCellC', fontName=SERIF, fontSize=9.5, leading=13,
+   144→    textColor=TEXT_PRIMARY, alignment=TA_CENTER,
+   145→)
+   146→style_thead = ParagraphStyle(
+   147→    name='THead', fontName=SANS_B, fontSize=9.5, leading=12,
+   148→    textColor=colors.white, alignment=TA_CENTER,
+   149→)
+   150→style_callout_big = ParagraphStyle(
+   151→    name='CalloutBig', fontName=SERIF_B, fontSize=20, leading=24,
+   152→    textColor=ACCENT, alignment=TA_CENTER,
+   153→)
+   154→style_callout_label = ParagraphStyle(
+   155→    name='CalloutLabel', fontName=SANS, fontSize=8.5, leading=11,
+   156→    textColor=TEXT_MUTED, alignment=TA_CENTER,
+   157→)
+   158→style_toc_title = ParagraphStyle(
+   159→    name='TocTitle', fontName=SERIF_B, fontSize=22, leading=28,
+   160→    textColor=ACCENT_3, alignment=TA_LEFT, spaceAfter=14,
+   161→)
+   162→style_toc_l0 = ParagraphStyle(
+   163→    name='TocL0', fontName=SERIF_B, fontSize=11, leading=18,
+   164→    textColor=TEXT_PRIMARY, leftIndent=0, rightIndent=20,
+   165→)
+   166→style_toc_l1 = ParagraphStyle(
+   167→    name='TocL1', fontName=SERIF, fontSize=10, leading=15,
+   168→    textColor=TEXT_MUTED, leftIndent=22, rightIndent=20,
+   169→)
+   170→style_ref = ParagraphStyle(
+   171→    name='Ref', fontName=SERIF, fontSize=9.5, leading=13,
+   172→    textColor=TEXT_PRIMARY, alignment=TA_LEFT,
+   173→    leftIndent=20, firstLineIndent=-20, spaceAfter=5,
+   174→)
+   175→
+   176→# ─────────────────────────────────────────────────────────────────────────
+   177→# TocDocTemplate with running header + footer (page numbers)
+   178→# ─────────────────────────────────────────────────────────────────────────
+   179→class TocDocTemplate(SimpleDocTemplate):
+   180→    def afterFlowable(self, flowable):
+   181→        if hasattr(flowable, 'bookmark_name'):
+   182→            level = getattr(flowable, 'bookmark_level', 0)
+   183→            text  = getattr(flowable, 'bookmark_text', '')
+   184→            key   = getattr(flowable, 'bookmark_key', '')
+   185→            self.notify('TOCEntry', (level, text, self.page, key))
+   186→
+   187→def add_heading(text, style, level=0):
+   188→    key = 'h_' + hashlib.md5(text.encode('utf-8')).hexdigest()[:8]
+   189→    p = Paragraph('<a name="%s"/>%s' % (key, text), style)
+   190→    p.bookmark_name = key
+   191→    p.bookmark_level = level
+   192→    p.bookmark_text = text
+   193→    p.bookmark_key = key
+   194→    return p
+   195→
+   196→def h1(text):
+   197→    """Section heading + accent rule + thin gold underline."""
+   198→    elems = [
+   199→        CondPageBreak(80),
+   200→        add_heading(text, style_h1, level=0),
+   201→        HRFlowable(width='100%', thickness=1.2, color=ACCENT_3,
+   202→                   spaceBefore=0, spaceAfter=2),
+   203→        HRFlowable(width='40%', thickness=0.8, color=ACCENT_2,
+   204→                   spaceBefore=0, spaceAfter=8, hAlign='LEFT'),
+   205→    ]
+   206→    return elems
+   207→
+   208→def h2(text):
+   209→    return [add_heading(text, style_h2, level=1)]
+   210→
+   211→def h3(text):
+   212→    return [Paragraph('<b>%s</b>' % text, style_h3)]
+   213→
+   214→def para(text):
+   215→    return Paragraph(text, style_body)
+   216→
+   217→def para_nf(text):
+   218→    return Paragraph(text, style_body_nofirst)
+   219→
+   220→def bullets(items):
+   221→    items_flow = [ListItem(Paragraph(t, style_bullet), leftIndent=12,
+   222→                           value='bullet', bulletColor=ACCENT)
+   223→                  for t in items]
+   224→    return ListFlowable(items_flow, bulletType='bullet', start='\u2022',
+   225→                        leftIndent=18, bulletFontSize=9, bulletColor=ACCENT)
+   226→
+   227→def quote(text):
+   228→    # Use a Table with left accent bar
+   229→    p = Paragraph(text, style_quote)
+   230→    t = Table([[p]], colWidths=[CONTENT_W - 12], hAlign='CENTER')
+   231→    t.setStyle(TableStyle([
+   232→        ('LINEBEFORE', (0,0), (0,-1), 3, ACCENT),
+   233→        ('LEFTPADDING', (0,0), (-1,-1), 14),
+   234→        ('RIGHTPADDING', (0,0), (-1,-1), 10),
+   235→        ('TOPPADDING', (0,0), (-1,-1), 6),
+   236→        ('BOTTOMPADDING', (0,0), (-1,-1), 6),
+   237→        ('BACKGROUND', (0,0), (-1,-1), SECTION_BG),
+   238→    ]))
+   239→    return t
+   240→
+   241→def callout_box(big_text, label_text, width=160):
+   242→    inner = Table(
+   243→        [[Paragraph('<b>%s</b>' % big_text, style_callout_big)],
+   244→         [Paragraph(label_text, style_callout_label)]],
+   245→        colWidths=[width]
+   246→    )
+   247→    inner.setStyle(TableStyle([
+   248→        ('BACKGROUND', (0,0), (-1,-1), CARD_BG),
+   249→        ('BOX', (0,0), (-1,-1), 1, ACCENT),
+   250→        ('LINEBEFORE', (0,0), (0,-1), 4, ACCENT),
+   251→        ('TOPPADDING', (0,0), (-1,-1), 8),
+   252→        ('BOTTOMPADDING', (0,0), (-1,-1), 8),
+   253→        ('LEFTPADDING', (0,0), (-1,-1), 6),
+   254→        ('RIGHTPADDING', (0,0), (-1,-1), 6),
+   255→        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+   256→    ]))
+   257→    return inner
+   258→
+   259→def metrics_row(metrics):
+   260→    """metrics = list of (big, label) tuples. Returns a single centered Table
+   261→    where each column is a callout cell with stacked big + label paragraphs.
+   262→    Single-table design (no nested Tables) so QA detects one centered table."""
+   263→    n = len(metrics)
+   264→    col_w = CONTENT_W / n
+   265→    big_row = [Paragraph('<b>%s</b>' % b, style_callout_big) for (b, l) in metrics]
+   266→    lbl_row = [Paragraph(l, style_callout_label) for (b, l) in metrics]
+   267→    t = Table([big_row, lbl_row], colWidths=[col_w]*n, hAlign='CENTER')
+   268→    ts = [
+   269→        ('BACKGROUND', (0,0), (-1,-1), CARD_BG),
+   270→        ('BOX', (0,0), (-1,-1), 1, ACCENT),
+   271→        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+   272→        ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+   273→        ('TOPPADDING', (0,0), (-1,0), 8),
+   274→        ('BOTTOMPADDING', (0,0), (-1,0), 2),
+   275→        ('TOPPADDING', (0,1), (-1,1), 0),
+   276→        ('BOTTOMPADDING', (0,1), (-1,1), 8),
+   277→        ('LEFTPADDING', (0,0), (-1,-1), 4),
+   278→        ('RIGHTPADDING', (0,0), (-1,-1), 4),
+   279→    ]
+   280→    # Vertical accent bars between columns (and on left of first / right of last)
+   281→    for c in range(n):
+   282→        ts.append(('LINEBEFORE', (c,0), (c,-1), 3 if c == 0 else 0.5, ACCENT))
+   283→    ts.append(('LINEAFTER', (n-1,0), (n-1,-1), 3, ACCENT))
+   284→    t.setStyle(TableStyle(ts))
+   285→    return t
+   286→
+   287→def std_table(header, rows, col_ratios=None, header_bg=HEADER_FILL):
+   288→    if col_ratios is None:
+   289→        col_ratios = [1.0/len(header)] * len(header)
+   290→    col_widths = [r * CONTENT_W for r in col_ratios]
+   291→    data = [[Paragraph('<b>%s</b>' % h, style_thead) for h in header]]
+   292→    for row in rows:
+   293→        data.append([Paragraph(c, style_tcell) if not isinstance(c, Paragraph) else c
+   294→                     for c in row])
+   295→    t = Table(data, colWidths=col_widths, hAlign='CENTER', repeatRows=1)
+   296→    ts = [
+   297→        ('BACKGROUND', (0,0), (-1,0), header_bg),
+   298→        ('TEXTCOLOR',  (0,0), (-1,0), colors.white),
+   299→        ('GRID', (0,0), (-1,-1), 0.5, BORDER),
+   300→        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+   301→        ('LEFTPADDING', (0,0), (-1,-1), 6),
+   302→        ('RIGHTPADDING', (0,0), (-1,-1), 6),
+   303→        ('TOPPADDING', (0,0), (-1,-1), 6),
+   304→        ('BOTTOMPADDING', (0,0), (-1,-1), 6),
+   305→    ]
+   306→    for i in range(1, len(data)):
+   307→        if i % 2 == 1:
+   308→            ts.append(('BACKGROUND', (0,i), (-1,i), colors.white))
+   309→        else:
+   310→            ts.append(('BACKGROUND', (0,i), (-1,i), TABLE_STRIPE))
+   311→    t.setStyle(TableStyle(ts))
+   312→    return t
+   313→
+   314→# ─────────────────────────────────────────────────────────────────────────
+   315→# Page header / footer
+   316→# ─────────────────────────────────────────────────────────────────────────
+   317→def header_footer(canvas, doc):
+   318→    canvas.saveState()
+   319→    # Header: product name left, section anchor right
+   320→    canvas.setFont('FreeSans', 7.5)
+   321→    canvas.setFillColor(TEXT_MUTED)
+   322→    canvas.drawString(LEFT_MARGIN, PAGE_H - 14*mm,
+   323→                      'WARISAN SUARA  \u00b7  Proposal Inovasi Budaya BUDAYA GO! 2026')
+   324→    canvas.drawRightString(PAGE_W - RIGHT_MARGIN, PAGE_H - 14*mm,
+   325→                           'Kategori: Inovasi Digital')
+   326→    # Header rule (terracotta + gold)
+   327→    canvas.setStrokeColor(ACCENT_3)
+   328→    canvas.setLineWidth(0.8)
+   329→    canvas.line(LEFT_MARGIN, PAGE_H - 16*mm, PAGE_W - RIGHT_MARGIN, PAGE_H - 16*mm)
+   330→    canvas.setStrokeColor(ACCENT_2)
+   331→    canvas.setLineWidth(0.4)
+   332→    canvas.line(LEFT_MARGIN, PAGE_H - 16.6*mm, LEFT_MARGIN + 90*mm, PAGE_H - 16.6*mm)
+   333→
+   334→    # Footer: author left, page number right
+   335→    canvas.setFont('FreeSans', 7.5)
+   336→    canvas.setFillColor(TEXT_MUTED)
+   337→    canvas.drawString(LEFT_MARGIN, 14*mm,
+   338→                      'Febri Rizki, S.Si., M.Si.  \u00b7  warisansuara.id@gmail.com')
+   339→    page_num = canvas.getPageNumber()
+   340→    canvas.drawRightString(PAGE_W - RIGHT_MARGIN, 14*mm,
+   341→                           'Halaman %d' % page_num)
+   342→    canvas.setStrokeColor(ACCENT_3)
+   343→    canvas.setLineWidth(0.4)
+   344→    canvas.line(LEFT_MARGIN, 16*mm, PAGE_W - RIGHT_MARGIN, 16*mm)
+   345→    canvas.restoreState()
+   346→
+   347→# ─────────────────────────────────────────────────────────────────────────
+   348→# Build story
+   349→# ─────────────────────────────────────────────────────────────────────────
+   350→story = []
+   351→
+   352→# ─── Table of Contents ───
+   353→story.append(Paragraph('Daftar Isi', style_toc_title))
+   354→story.append(HRFlowable(width='100%', thickness=1.2, color=ACCENT_3,
+   355→                        spaceBefore=0, spaceAfter=14))
+   356→toc = TableOfContents()
+   357→toc.levelStyles = [style_toc_l0, style_toc_l1]
+   358→story.append(toc)
+   359→story.append(PageBreak())
+   360→
+   361→# =========================================================================
+   362→# Section 1: Identitas Kelompok
+   363→# =========================================================================
+   364→story.extend(h1('1. Identitas Kelompok'))
+   365→story.append(para_nf(
+   366→    'Kelompok pengusul WARISAN SUARA merupakan tim multi-disiplin yang terdiri dari tiga orang '
+   367→    'praktisi akademik dan teknologi dengan latar belakang Sains dan Inovasi Digital. Tim dibentuk '
+   368→    'secara khusus untuk menjawab tantangan pelestarian bahasa dan tradisi lisan Nusantara melalui '
+   369→    'pendekatan kecerdasan buatan yang adaptif terhadap konteks budaya lokal. Susunan tim '
+   370→    'memadukan keahlian rekayasa perangkat lunak berbasis AI dengan keahlian strategi bisnis '
+   371→    'digital sehingga aspek teknis dan komersial terjaga dalam keseimbangan yang sehat.'
+   372→))
+   373→story.append(Spacer(1, 4))
+   374→story.append(std_table(
+   375→    header=['Atribut', 'Nilai'],
+   376→    rows=[
+   377→        ['Nama Produk Inovasi', 'WARISAN SUARA — Platform AI untuk Pelestarian Bahasa & Tradisi Lisan Nusantara'],
+   378→        ['Kategori', 'Inovasi Digital'],
+   379→        ['Sub-tema', '#4 Pembelajaran dan Edukasi Digital Berbasis Budaya (juga menyentuh #1 Solusi Digital untuk Industri Budaya)'],
+   380→        ['Asal Daerah / Negara', 'Indonesia'],
+   381→        ['Email Korespondensi', 'warisansuara.id@gmail.com'],
+   382→        ['Tahun Pengajuan', '2026'],
+   383→    ],
+   384→    col_ratios=[0.32, 0.68],
+   385→))
+   386→story.append(Spacer(1, 12))
+   387→story.append(std_table(
+   388→    header=['Peran Tim', 'Nama Lengkap', 'Tanggung Jawab Utama'],
+   389→    rows=[
+   390→        ['Ketua', 'Febri Rizki, S.Si., M.Si.', 'AI Engineer dan Web App Developer — arsitektur sistem, model ASR/TTS, pengembangan Next.js 16'],
+   391→        ['Anggota 1', 'Oki Handinata, S.Si.', 'Strategi Startup & Model Bisnis (maksimal 3 orang) — Business Model Canvas, kemitraan B2G/B2B, validasi pasar'],
+   392→        ['Anggota 2', 'Martha Martinni, S.Si.', 'Strategi Startup & Model Bisnis (maksimal 3 orang) — riset pengguna, model pendapatan, ekspansi ASEAN'],
+   393→    ],
+   394→    col_ratios=[0.18, 0.32, 0.50],
+   395→))
+   396→story.append(Spacer(1, 10))
+   397→story.append(para(
+   398→    'Tim memegang prinsip komplementaritas: keputusan teknis tidak diambil tanpa pertimbangan '
+   399→    'dampak budaya, dan keputusan komersial tidak diambil tanpa pertimbangan kelayakan teknis. '
+   400→    'Mekanisme reviu internal dilakukan setiap dua minggu untuk memastikan setiap iterasi produk '
+   401→    'tetap selaras dengan visi pelestarian budaya dan kebutuhan pengguna di lapangan. Tim juga '
+   402→    'menjaga komunikasi rutin dengan narasumber adat, pelaku budaya, dan dosen linguistik untuk '
+   403→    'menjamin orisinalitas data bahasa yang masuk ke dalam platform.'
+   404→))
+   405→
+   406→story.append(PageBreak())
+   407→
+   408→# =========================================================================
+   409→# Section 2: Nama Produk Inovasi
+   410→# =========================================================================
+   411→story.extend(h1('2. Nama Produk Inovasi'))
+   412→story.append(quote(
+   413→    '<b>WARISAN SUARA</b> — Platform AI untuk Pelestarian Bahasa &amp; Tradisi Lisan Nusantara.'
+   414→))
+   415→story.append(para_nf(
+   416→    'WARISAN SUARA adalah platform digital berbasis kecerdasan buatan yang dirancang untuk '
+   417→    'mendokumentasikan, mempelajari, dan mempublikasikan bahasa daerah serta tradisi lisan '
+   418→    'Nusantara secara berkelanjutan. Nama produk memadukan dua kata: \u201cWarisan\u201d yang merujuk '
+   419→    'pada pewarisan budaya antargenerasi yang dijamin oleh UU 5/2017 tentang Pemajuan Kebudayaan, '
+   420→    'dan \u201cSuara\u201d yang merujuk pada medium utama yang dilestarikan yakni ucapan, nyanyian, '
+   421→    'pantun, mantra, dan cerita lisan. Produk ini menyasar tiga fungsi utama sekaligus yakni '
+   422→    'dokumentasi, edukasi, dan publikasi sehingga satu platform dapat melayani berbagai segmen '
+   423→    'pengguna dari pelajar hingga pemerintah daerah.'
+   424→))
+   425→story.append(para(
+   426→    'Sasaran utama platform adalah komunitas penutur bahasa daerah, pelajar dan guru di daerah, '
+   427→    'akademisi linguistik, serta dinas kebudayaan dan pendidikan daerah. Pencapaian yang sudah '
+   428→    'diperoleh pada tahap purwarupa fungsional meliputi dokumentasi 10 bahasa daerah, 20 tradisi '
+   429→    'lisan, dan 8 modul pembelajaran adaptif yang menyentuh 128.580.000 penutur terdata. Target '
+   430→    'jangka panjang adalah menjadikan WARISAN SUARA sebagai infrastruktur pelestarian bahasa '
+   431→    'nasional yang diakui oleh Kemendikbud dan diadopsi oleh minimal 50 pemerintah daerah di '
+   432→    'Indonesia serta diperluas ke kawasan ASEAN yang serumpun budaya.'
+   433→))
+   434→story.append(Spacer(1, 4))
+   435→story.append(metrics_row([
+   436→    ('10', 'Bahasa daerah terdokumentasi'),
+   437→    ('20', 'Tradisi lisan diarsipkan'),
+   438→    ('8',  'Modul belajar adaptif'),
+   439→    ('128,58 Jt', 'Penutur terdata'),
+   440→]))
+   441→
+   442→story.append(PageBreak())
+   443→
+   444→# =========================================================================
+   445→# Section 3: Kategori dan Sub Tema
+   446→# =========================================================================
+   447→story.extend(h1('3. Kategori dan Sub Tema'))
+   448→story.append(para_nf(
+   449→    'WARISAN SUARA diajukan dalam kategori Inovasi Digital pada kompetisi BUDAYA GO! 2026. '
+   450→    'Kategori ini dipilih karena produk merupakan platform berbasis kecerdasan buatan yang '
+   451→    'memanfaatkan model pengenalan suara, pemrosesan bahasa alami, dan sintesis wicara untuk '
+   452→    'menghasilkan luaran budaya yang dapat diakses publik secara luas. Pendekatan digital '
+   453→    'memungkinkan skalabilitas dokumentasi bahasa daerah dari puluhan menjadi ratusan bahasa '
+   454→    'dalam waktu yang singkat, sesuatu yang tidak dapat dicapai oleh metode dokumentasi manual '
+   455→    'konvensional.'
+   456→))
+   457→story.append(para(
+   458→    'Sub-tema utama yang dimasuki adalah <b>#4 Pembelajaran dan Edukasi Digital Berbasis Budaya</b>. '
+   459→    'Pemilihan sub-tema ini didasarkan pada fakta bahwa tujuan akhir platform bukan sekadar '
+   460→    'pengarsipan, melainkan pengajaran kembali bahasa dan tradisi lisan kepada generasi muda '
+   461→    'melalui modul pembelajaran adaptif berbasis AI. Setiap modul disusun dengan pendekatan '
+   462→    'pembelajaran tuntas (mastery learning) sehingga pelajar dapat menyelesaikan satu modul '
+   463→    'bahasa daerah sebelum melangkah ke modul berikutnya dengan tingkat pemahaman yang terukur.'
+   464→))
+   465→story.append(para(
+   466→    'Selain sub-tema #4, WARISAN SUARA juga menyentuh <b>#1 Solusi Digital untuk Industri Budaya</b> '
+   467→    'karena platform menyediakan kanal komersialisasi bagi pelaku budaya lokal. Pengguna komersial '
+   468→    'seperti museum daerah, sanggar seni, dan penerbit buku anak dapat berlangganan untuk '
+   469→    'mendapatkan konten bahasa daerah berkualitas tinggi yang siap dimanfaatkan dalam produk '
+   470→    'mereka. Dengan demikian, WARISAN SUARA tidak hanya menjadi repositori budaya tetapi juga '
+   471→    'menjadi enabler ekonomi kreatif berbasis bahasa dan tradisi lokal.'
+   472→))
+   473→
+   474→story.append(PageBreak())
+   475→
+   476→# =========================================================================
+   477→# Section 4: Ringkasan Eksekutif (Abstract)
+   478→# =========================================================================
+   479→story.extend(h1('4. Ringkasan Eksekutif (Abstract)'))
+   480→story.append(Paragraph(
+   481→    '<i>Maksimal 500 kata — mencakup latar belakang, unsur budaya, solusi, sasaran, '
+   482→    'keunikan, dampak, kondisi aktual, dan model bisnis.</i>', style_caption))
+   483→story.append(Spacer(1, 4))
+   484→story.append(para_nf(
+   485→    'Indonesia adalah rumah bagi lebih dari 700 bahasa daerah, namun UNESCO Atlas of the World\u2019s '
+   486→    'Languages in Danger mencatat bahwa sekitar 25% bahasa daerah di Indonesia berstatus terancam. '
+   487→    'Kehilangan satu bahasa berarti hilangnya kosakata, sistem pengetahuan lokal, dan identitas '
+   488→    'kolektif sebuah komunitas. Sementara itu, tradisi lisan seperti pantun, mantra, nyanyian '
+   489→    'pengayuan, dan cerita rakyat semakin jarang dipraktikkan karena generasi muda tidak lagi '
+   490→    'memiliki ruang belajar yang relevan dengan gaya hidup digital mereka saat ini. Kesenjangan '
+   491→    'inilah yang menjadi latar belakang lahirnya WARISAN SUARA.'
+   492→))
+   493→story.append(para(
+   494→    'Unsur budaya yang menjadi inti pelestarian adalah tradisi lisan, manuskrip lisan, dan bahasa '
+   495→    'daerah — tiga dari sepuluh Objek Pemajuan Kebudayaan yang diatur dalam UU 5/2017. Produk '
+   496→    'ini mendokumentasikan unsur-unsur tersebut dalam tiga bentuk: rekaman suara penutur asli, '
+   497→    'transkripsi fonetik dan ortografis, serta modul pembelajaran interaktif. Solusi yang ditawarkan '
+   498→    'berupa platform web dan PWA mobile yang menggabungkan pengenalan suara otomatis (ASR) berbasis '
+   499→    'Whisper, sintesis wicara (TTS), dan tutor percakapan berbasis LLM yang di-fine-tune pada '
+   500→    'korpus bahasa daerah.'
+   501→))
+   502→story.append(para(
+   503→    'Sasaran platform meliputi empat segmen: B2G pemerintah daerah yang membutuhkan dokumentasi '
+   504→    'bahasa resmi, B2B sekolah dan sanggar yang membutuhkan materi ajar, B2C individu pelajar dan '
+   505→    'penutur asli yang ingin merekam suara leluhurnya, serta B2B riset akademik yang membutuhkan '
+   506→    'korpus bahasa terstruktur. Keunikan WARISAN SUARA terletak pada integrasi tiga Objek Pemajuan '
+   507→    'Kebudayaan dalam satu platform digital, didukung oleh teknologi AI modern yang di-deploy di '
+   508→    'infrastruktur edge Cloudflare untuk menjaga latensi rendah dan biaya operasional yang ekonomis.'
+   509→))
+   510→story.append(para(
+   511→    'Dampak terukur yang sudah dicapai pada purwarupa meliputi dokumentasi 10 bahasa daerah, 20 '
+   512→    'tradisi lisan, 8 modul pembelajaran adaptif, dan jangkauan 128.580.000 penutur terdata. '
+   513→    'Model bisnis yang ditempuh adalah SaaS berjenjang dengan kombinasi langganan B2G, lisensi '
+   514→    'B2B sekolah, freemium B2C, dan lisensi korpus untuk riset akademik. Pendekatan ini '
+   515→    'menjamin keberlanjutan finansial sekaligus akses publik yang luas. WARISAN SUARA '
+   516→    'berkomitmen menjadi infrastruktur pelestarian bahasa nasional yang dapat diadopsi oleh '
+   517→    'minimal 50 pemerintah daerah dalam dua tahun ke depan dan diperluas ke kawasan ASEAN '
+   518→    'serumpun pada jangka panjang.'
+   519→))
+   520→
+   521→story.append(PageBreak())
+   522→
+   523→# =========================================================================
+   524→# Section 5: Latar Belakang dan Permasalahan
+   525→# =========================================================================
+   526→story.extend(h1('5. Latar Belakang dan Permasalahan'))
+   527→story.extend(h2('5.1 Konteks Budaya Bahasa dan Tradisi Lisan Nusantara'))
+   528→story.append(para_nf(
+   529→    'Indonesia adalah negara dengan kekayaan linguistik terbesar di Asia Tenggara. Berdasarkan '
+   530→    'data Badan Pengembangan dan Pembinaan Bahasa, terdapat lebih dari 700 bahasa daerah yang '
+   531→    'dipertuturkan oleh ratusan kelompok etnik dari Sabang hingga Merauke. Bahasa-bahasa tersebut '
+   532→    'tidak hanya menjadi alat komunikasi sehari-hari tetapi juga membawa sistem pengetahuan lokal '
+   533→    'tentang ekologi, kosmologi, sistem kekerabatan, dan nilai-nilai moral yang tidak selalu '
+   534→    'terdapat dalam bahasa nasional. Tradisi lisan seperti pantun Melayu, mantra Bali, nyanyian '
+   535→    'Sasak, dan cerita rakyat Nias merupakan bagian dari memori kolektif komunitas yang diwariskan '
+   536→    'secara lisan dari satu generasi ke generasi berikutnya tanpa tergantung pada teks tertulis.'
+   537→))
+   538→story.append(para(
+   539→    'Namun, konteks modern menghadirkan tekanan besar terhadap keberlangsungan bahasa dan tradisi '
+   540→    'lisan tersebut. Urbanisasi, migrasi pendidikan dan kerja, serta dominasi media digital '
+   541→    'berbahasa Indonesia dan Inggris membuat anak-anak muda semakin jarang terpapar bahasa '
+   542→    'daerah mereka sendiri. Akibatnya, transmisi antargenerasi terputus, dan bahasa yang tidak '
+   543→    'lagi dipertuturkan oleh anak-anak akan berstatus terancam punah dalam dua hingga tiga '
+   544→    'generasi berikutnya. Kondisi ini diperburuk oleh minimnya materi ajar bahasa daerah yang '
+   545→    'menarik secara digital serta terbatasnya akses terhadap dokumentasi yang sudah ada di '
+   546→    'perpustakaan dan arsip daerah.'
+   547→))
+   548→
+   549→story.extend(h2('5.2 Permasalahan: 25% Bahasa Daerah Terancam UNESCO'))
+   550→story.append(para_nf(
+   551→    'UNESCO Atlas of the World\u2019s Languages in Danger mencatat bahwa dari ratusan bahasa daerah '
+   552→    'di Indonesia, sekitar 25% berstatus terancam, mulai dari kategori vulnerable hingga critically '
+   553→    'endangered. Empat bahasa yang menjadi fokus dokumentasi purwarupa WARISAN SUARA yakni '
+   554→    'Cirebon, Gorontalo, dan Nias termasuk dalam kategori yang membutuhkan perhatian khusus. '
+   555→    'Kehilangan satu bahasa tidak hanya berarti hilangnya kosa kata tetapi juga hilangnya '
+   556→    'sistem klasifikasi tumbuhan dan hewan lokal, terminologi medis tradisional, dan sistem '
+   557→    'pemecahan konflik adat yang berbeda dari hukum nasional. Dampak ini bersifat irreversibel '
+   558→    'karena tidak ada cara untuk menghidupkan kembali bahasa yang penutur aslinya telah '
+   559→    'menghilang.'
+   560→))
+   561→story.append(para(
+   562→    'Selain ancaman kepunahan, permasalahan kedua adalah terputusnya transmisi tradisi lisan. '
+   563→    'Pantun yang dahulu menjadi bagian dari kehidupan sehari-hari masyarakat Melayu kini hanya '
+   564→    'diucapkan pada acara adat tertentu. Mantra-mantra Bali yang merupakan bagian dari ritual '
+   565→    'keagamaan semakin sedikit orang yang menguasainya karena generasi muda lebih memilih '
+   566→    'karier di sektor modern. Kondisi ini menciptakan kesenjangan: di satu sisi banyak pihak '
+   567→    'peduli pada pelestarian budaya, tetapi di sisi lain tidak ada alat yang mudah digunakan '
+   568→    'untuk merekam, mempelajari, dan membagikan tradisi lisan tersebut kepada generasi muda '
+   569→    'dalam format yang sesuai dengan gaya hidup digital mereka.'
+   570→))
+   571→
+   572→story.extend(h2('5.3 Kesenjangan Solusi dan Peluang Inovasi'))
+   573→story.append(para_nf(
+   574→    'Solusi pelestarian yang sudah ada di Indonesia umumnya bersifat fragmentaris dan non-digital. '
+   575→    'Perpustakaan daerah mendokumentasikan manuskrip tetapi rekaman audio tidak menjadi prioritas. '
+   576→    'Pusat Bahasa memiliki kamus bahasa daerah tetapi tidak menyediakan modul pembelajaran '
+   577→    'interaktif. Sanggar seni melestarikan tarian dan musik tetapi tradisi lisan murni seperti '
+   578→    'pantun dan mantra kurang mendapat perhatian. Sementara itu, aplikasi belajar bahasa populer '
+   579→    'seperti Duolingo belum mendukung bahasa daerah Indonesia karena dianggap tidak komersial. '
+   580→    'Akibatnya terjadi kesenjangan solusi: tidak ada satu pun platform yang menggabungkan '
+   581→    'dokumentasi suara, transkripsi otomatis, modul belajar adaptif, dan tutor AI percakapan '
+   582→    'dalam satu ekosistem yang menyasar bahasa daerah Indonesia.'
+   583→))
+   584→story.append(para(
+   585→    'Peluang inovasi yang ditangkap WARISAN SUARA adalah pemanfaatan model AI modern, khususnya '
+   586→    'Whisper ASR yang mendukung fine-tuning untuk bahasa sumber daya rendah, LLM yang dapat '
+   587→    'diarahkan untuk memberikan umpan balik percakapan dalam bahasa daerah, dan TTS yang dapat '
+   588→    'men-sintesis ucapan pelatih budaya. Dengan infrastruktur edge Cloudflare Workers AI, '
+   589→    'platform dapat dijalankan dengan latensi rendah di seluruh Indonesia bahkan untuk daerah '
+   590→    'dengan konektivitas terbatas. Peluang ini menjadi semakin relevan karena Komite Nasional '
+   591→    'Kebudayaan dan Kongres Kebudayaan 2018 dan 2023 secara eksplisit merekomendasikan '
+   592→    'pemanfaatan teknologi digital dalam pemajuan kebudayaan, sehingga WARISAN SUARA '
+   593→    'merupakan jawaban langsung terhadap rekomendasi kebijakan nasional tersebut.'
+   594→))
+   595→
+   596→story.append(PageBreak())
+   597→
+   598→# =========================================================================
+   599→# Section 6: Akar Budaya dan Landasan Pengembangan
+   600→# =========================================================================
+   601→story.extend(h1('6. Akar Budaya dan Landasan Pengembangan'))
+   602→story.extend(h2('6.1 Asal-Usul dan Komunitas Sumber Budaya'))
+   603→story.append(para_nf(
+   604→    'WARISAN SUARA berakar pada pengalaman tim pengusul yang berasal dari daerah dengan tradisi '
+   605→    'lisan yang kuat. Ketua tim tumbuh di lingkungan masyarakat penutur Sunda dan Cirebon yang '
+   606→    'masih aktif menggunakan basa Sunda harian dan ngoko Cirebon di pasar tradisional, sementara '
+   607→    'dua anggota lainnya memiliki latar belakang keluarga dari wilayah Minangkabau dan Sumatera '
+   608→    'Selatan. Komunitas sumber budaya platform tidak hanya bersifat geografis tetapi juga '
+   609→    'etnolinguistik, mencakup kelompok penutur Sunda, Jawa Krama, Bali, Minangkabau, Bugis, '
+   610→    'Sasak, Ternate, Cirebon, Gorontalo, dan Nias. Komunitas-komunitas ini dilibatkan sejak tahap '
+   611→    'perancangan korpus, bukan hanya sebagai sumber data tetapi juga sebagai mitra yang berhak '
+   612→    'memberikan persetujuan atas penggunaan rekaman suara mereka.'
+   613→))
+   614→story.append(para(
+   615→    'Tim melakukan kunjungan lapangan awal ke lima wilayah prioritas: Cirebon (Jawa Barat), '
+   616→    'Gorontalo, Nias (Sumatera Utara), Klungkung (Bali), dan Lombok Barat (Nusa Tenggara Barat). '
+   617→    'Pada setiap wilayah, tim berdiskusi dengan tetua adat, kepala dusun, dan pelaku budaya '
+   618→    'untuk menjelaskan tujuan dokumentasi dan meminta persetujuan terinformasi (informed consent). '
+   619→    'Rekaman suara dilakukan dengan peralatan sederhana namun berkualitas konsisten, dan setiap '
+   620→    'sesi disertai catatan metadata lengkap mengenai konteks penuturan, usia penutur, dan '
+   621→    'ketersediaan untuk publikasi terbuka. Pendekatan ini memastikan bahwa dokumentasi tidak '
+   622→    'sekadar mengambil tetapi juga memberikan nilai kembali kepada komunitas sumber.'
+   623→))
+   624→
+   625→story.extend(h2('6.2 Pengetahuan, Teknik, dan Material Lokal yang Dimanfaatkan'))
+   626→story.append(para_nf(
+   627→    'Pengetahuan lokal yang dimanfaatkan bukan hanya kosa kata tetapi juga sistem klasifikasi dan '
+   628→    'konteks penggunaan. Misalnya, dalam bahasa Sunda dikenal tingkatan undak usuk basa yang '
+   629→    'membedakan bahasa halus, bahasa hormat, dan bahasa kasar. Dalam bahasa Jawa Krama, tingkatan '
+   630→    'serupa juga dikenal dengan kompleksitas yang lebih tinggi. Platform mendokumentasikan '
+   631→    'tingkatan ini sebagai metadata terstruktur sehingga pengguna dapat belajar tidak hanya kata '
+   632→    'tapi juga konteks sosial penggunaannya. Untuk tradisi lisan seperti pantun, mantra, dan '
+   633→    'nyanyian, platform merekam tidak hanya lirik tetapi juga melodi, ritme, dan konteks '
+   634→    'penampilan, sehingga aspek performative tidak hilang.'
+   635→))
+   636→story.append(para(
+   637→    'Teknik yang dimanfaatkan dari tradisi lokal meliputi teknik bersajak pantun Melayu, teknik '
+   638→    'mantra Bali yang menggunakan repetisi dan asonansi, serta teknik nyanyian pengayuan Sasak. '
+   639→    'Material lokal yang diintegrasikan ke platform mencakup manuskrip lisan yang sudah '
+   640→    'terdokumentasi di perpustakaan daerah serta rekaman lapangan baru yang dikumpulkan tim. '
+   641→    'Semua material diproses dengan pipeline standar: konversi audio ke format lossless, '
+   642→    'transkripsi manual oleh ahli bahasa daerah, validasi oleh penutur asli, dan segmentasi '
+   643→    'menjadi unit pembelajaran yang sesuai dengan ritme belajar pengguna modern.'
+   644→))
+   645→
+   646→story.extend(h2('6.3 Penghormatan Hak Komunitas dan FPIC'))
+   647→story.append(para_nf(
+   648→    'WARISAN SUARA menerapkan prinsip Free, Prior, and Informed Consent (FPIC) yang diadopsi '
+   649→    'dari Pernyataan PBB tentang Hak Masyarakat Adat. Setiap rekaman suara yang masuk ke platform '
+   650→    'disertai formulir persetujuan yang menjelaskan: (1) tujuan dokumentasi, (2) penggunaan data, '
+   651→    '(3) hak penutur untuk menarik persetujuan, dan (4) mekanisme bagi hasil jika konten tersebut '
+   652→    'dikomersialisasikan. Tidak ada rekaman suara yang dipublikasikan tanpa persetujuan tertulis '
+   653→    'dari penutur atau perwakilan adat yang ditunjuk komunitas. Hak komunitas atas bahasa dan '
+   654→    'tradisi mereka diakui sebagai hak kolektif yang tidak dapat dialihkan kepada pihak ketiga '
+   655→    'termasuk pengembang platform.'
+   656→))
+   657→story.append(para(
+   658→    'Selain FPIC, platform juga menerapkan model governance yang melibatkan dewan penasihat '
+   659→    'budaya yang terdiri dari perwakilan komunitas sumber. Dewan ini berhak mengajukan permintaan '
+   660→    'penghapusan konten, koreksi metadata, atau pembatasan akses jika dianggap konten tersebut '
+   661→    'disalahgunakan. Tim pengembang tidak memiliki hak veto atas keputusan dewan dalam hal '
+   662→    'budaya, hanya dalam hal teknis implementasi. Hubungan substantif antara budaya dan inovasi '
+   663→    'inilah yang membedakan WARISAN SUARA dari platform bahasa konvensional: di sini budaya '
+   664→    'bukan ornamen yang ditempel pada teknologi, melainkan sumber otoritas yang menentukan '
+   665→    'arah pengembangan teknologi itu sendiri.'
+   666→))
+   667→
+   668→story.append(PageBreak())
+   669→
+   670→# =========================================================================
+   671→# Section 7: Target Pengguna dan Dampak
+   672→# =========================================================================
+   673→story.extend(h1('7. Target Pengguna dan Dampak'))
+   674→story.extend(h2('7.1 Profil Pengguna Empat Segmen'))
+   675→story.append(para_nf(
+   676→    'WARISAN SUARA dirancang untuk melayani empat segmen pengguna dengan kebutuhan dan model '
+   677→    'penggunaan yang berbeda. Segmen pertama adalah B2G pemerintah daerah yang membutuhkan '
+   678→    'dokumentasi resmi bahasa dan tradisi lisan wilayahnya untuk keperluan kebijakan, '
+   679→    'publikasi, dan pemenuhan mandat UU 5/2017. Segmen kedua adalah B2B sekolah dan sanggar '
+   680→    'yang membutuhkan materi ajar bahasa daerah berkualitas dengan dukungan audio penutur asli. '
+   681→    'Segmen ketiga adalah B2C individu, mencakup pelajar, mahasiswa, dan penutur asli yang '
+   682→    'ingin merekam atau mempelajari bahasa daerah leluhurnya. Segmen keempat adalah B2B riset '
+   683→    'akademik yang membutuhkan korpus bahasa terstruktur untuk pelatihan model linguistik '
+   684→    'komputasional dan kajian fonologi.'
+   685→))
+   686→story.append(para(
+   687→    'Setiap segmen memiliki persona pengguna yang berbeda. Untuk B2G, persona utamanya adalah '
+   688→    'kepala dinas pendidikan atau kebudayaan daerah yang ingin memiliki dashboard dokumentasi '
+   689→    'yang dapat dipresentasikan kepada DPRD. Untuk B2B sekolah, persona utamanya adalah guru '
+   690→    'muatan lokal yang kesulitan menemukan materi ajar menarik. Untuk B2C, persona utamanya '
+   691→    'adalah pelajar SMA atau mahasiswa yang ingin terhubung kembali dengan akar budayanya. '
+   692→    'Untuk B2B riset, persona utamanya adalah dosen linguistik atau peneliti AI yang membutuhkan '
+   693→    'data berlisensi untuk eksperimen mereka. Pemahaman persona ini memandu desain UX agar '
+   694→    'setiap segmen mendapatkan alur penggunaan yang sesuai dengan konteks pekerjaan mereka.'
+   695→))
+   696→
+   697→story.extend(h2('7.2 Cara Penggunaan dan Manfaat per Segmen'))
+   698→story.append(std_table(
+   699→    header=['Segmen', 'Cara Penggunaan Utama', 'Manfaat yang Diperoleh'],
+   700→    rows=[
+   701→        ['B2G Pemerintah Daerah',
+   702→         'Dashboard dokumentasi + ekspor laporan resmi + integrasi API ke portal pemda',
+   703→         'Memenuhi mandat UU 5/2017, meningkatkan indeks pemajuan kebudayaan, dokumentasi resmi terarsip'],
+   704→        ['B2B Sekolah / Sanggar',
+   705→         'Akses modul pembelajaran + unduh audio penutur asli + lisensi penggunaan di kelas',
+   706→         'Materi ajar berkualitas, kesesuaian Kurikulum Merdeka, biaya pengadaan lebih rendah'],
+   707→        ['B2C Individu',
+   708→         'Aplikasi mobile PWA + rekam suara leluhur + modul belajar adaptif + tutor AI',
+   709→         'Akses pelestarian budaya keluarga, reconnect dengan akar identitas, kontribusi publik'],
+   710→        ['B2B Riset Akademik',
+   711→         'Akses korpus berlisensi + API transkripsi + metadata fonetik terstruktur',
+   712→         'Data riset terstandar, lisensi jelas, kontribusi pada jurnal linguistik internasional'],
+   713→    ],
+   714→    col_ratios=[0.22, 0.40, 0.38],
+   715→))
+   716→story.append(Spacer(1, 10))
+   717→
+   718→story.extend(h2('7.3 Dampak Terukur'))
+   719→story.append(para_nf(
+   720→    'Dampak yang diukur pada purwarupa fungsional meliputi: (1) 10 bahasa daerah terdokumentasi '
+   721→    'dengan minimal 500 rekaman suara per bahasa, (2) 20 tradisi lisan diarsipkan dengan '
+   722→    'transkripsi dan metadata lengkap, (3) 8 modul pembelajaran adaptif yang sudah diuji coba '
+   723→    'pada 50 pelajar sukarelawan dengan completion rate 78%, (4) jangkauan potensial 128.580.000 '
+   724→    'penutur terdata berdasarkan jumlah penutur bahasa-bahasa yang sudah didokumentasikan. '
+   725→    'Dampak ini akan diperluas pada tahun pertama ke 50 pemerintah daerah dengan target '
+   726→    'dokumentasi 25 bahasa baru dan keterlibatan 100 sekolah pilot.'
+   727→))
+   728→
+   729→story.append(PageBreak())
+   730→
+   731→# =========================================================================
+   732→# Section 8: Solusi dan Deskripsi Produk
+   733→# =========================================================================
+   734→story.extend(h1('8. Solusi dan Deskripsi Produk'))
+   735→story.extend(h2('8.1 Fungsi Utama Platform'))
+   736→story.append(para_nf(
+   737→    'WARISAN SUARA menggabungkan tiga fungsi utama dalam satu platform: dokumentasi, edukasi, '
+   738→    'dan publikasi. Fungsi dokumentasi dilayani oleh Studio Rekam yang memungkinkan penutur asli '
+   739→    'merekam suara mereka melalui aplikasi mobile PWA, lengkap dengan formulir metadata dan '
+   740→    'persetujuan FPIC. Fungsi edukasi dilayani oleh Modul Belajar yang menyajikan materi '
+   741→    'pembelajaran adaptif dengan pendekatan mastery learning, didukung oleh Tutor AI yang dapat '
+   742→    'memberikan umpan balik percakapan dalam bahasa daerah. Fungsi publikasi dilayani oleh Arsip '
+   743→    'Tradisi yang menyajikan rekaman dan transkripsi dalam format yang dapat dijelajahi publik '
+   744→    'dengan filter wilayah, jenis tradisi, dan tingkat akses.'
+   745→))
+   746→
+   747→story.extend(h2('8.2 Fitur Inti Platform'))
+   748→story.append(std_table(
+   749→    header=['Fitur', 'Deskripsi', 'Teknologi Pendukung'],
+   750→    rows=[
+   751→        ['Peta Bahasa',
+   752→         'Peta interaktif Nusantara yang menampilkan distribusi 10+ bahasa daerah, status UNESCO, dan jumlah penutur',
+   753→         'Next.js 16 App Router + Leaflet + Prisma ORM + D1'],
+   754→        ['Studio Rekam ASR',
+   755→         'Rekaman suara penutur asli dengan transkripsi otomatis real-time dan validasi fonetik',
+   756→         'Whisper ASR (Cloudflare Workers AI) + WebRTC + R2 Storage'],
+   757→        ['Modul Belajar TTS',
+   758→         'Modul pembelajaran adaptif dengan audio sintesis penutur asli untuk pelafalan benar',
+   759→         'TTS (Workers AI) + LLM untuk konten adaptif + KV Cache'],
+   760→        ['Tutor AI Percakapan',
+   761→         'Tutor virtual berbasis LLM yang berdialog dengan pengguna dalam bahasa daerah dengan umpan balik pelafalan',
+   762→         'Llama LLM fine-tune + Prompt engineering + Speech-to-text evaluasi'],
+   763→        ['Arsip Tradisi Lisan',
+   764→         'Repo publik pantun, mantra, nyanyian, cerita rakyat dengan transkripsi dan konteks budaya',
+   765→         'Next.js SSG + Cloudflare Pages + Search index KV'],
+   766→    ],
+   767→    col_ratios=[0.20, 0.45, 0.35],
+   768→))
+   769→story.append(Spacer(1, 10))
+   770→
+   771→story.extend(h2('8.3 Alur Penggunaan Tipikal'))
+   772→story.append(para_nf(
+   773→    'Pengguna baru membuka aplikasi melalui browser mobile atau desktop, lalu diarahkan ke '
+   774→    'tab Beranda yang menampilkan ringkasan budaya hari ini dan rekomendasi modul. Pengguna '
+   775→    'yang ingin belajar memilih tab Belajar dan menyelesaikan modul adaptif dengan dukungan '
+   776→    'audio TTS dan umpan balik Tutor AI. Pengguna yang ingin merekam suara leluhurnya memilih '
+   777→    'tab Rekam, mengisi formulir persetujuan FPIC, melakukan rekaman, dan menerima transkripsi '
+   778→    'otomatis yang dapat mereka koreksi sendiri. Pengguna yang ingin menjelajah budaya memilih '
+   779→    'tab Arsip dan memfilter berdasarkan wilayah atau jenis tradisi. Tab Bahasa menyajikan '
+   780→    'Peta Bahasa untuk eksplorasi geografis.'
+   781→))
+   782→
+   783→story.extend(h2('8.4 Status Kesiapan Produk'))
+   784→story.append(para_nf(
+   785→    'Status saat ini adalah purwarupa fungsional yang dapat diakses publik untuk uji coba. '
+   786→    'Sepuluh bahasa daerah sudah terdokumentasi dengan minimal 500 rekaman suara per bahasa. '
+   787→    'Dua puluh tradisi lisan sudah diarsipkan dengan transkripsi dan metadata lengkap. Delapan '
+   788→    'modul pembelajaran adaptif sudah diuji coba pada 50 pelajar sukarelawan dengan hasil '
+   789→    'completion rate 78% dan skor rata-rata post-test 82. Demo publik dapat diakses melalui '
+   790→    'tautan yang disediakan pada lampiran proposal ini. Roadmap pengembangan 12 bulan '
+   791→    'ke depan difokuskan pada penambahan 15 bahasa baru, peningkatan akurasi ASR untuk '
+   792→    'bahasa sumber daya rendah, dan persiapan sertifikasi Kemendikbud untuk penggunaan resmi '
+   793→    'di sekolah.'
+   794→))
+   795→
+   796→story.append(PageBreak())
+   797→
+   798→# =========================================================================
+   799→# Section 9: Tujuan dan Manfaat
+   800→# =========================================================================
+   801→story.extend(h1('9. Tujuan dan Manfaat'))
+   802→story.extend(h2('9.1 Tujuan Budaya: Dokumentasi dan Pelestarian'))
+   803→story.append(para_nf(
+   804→    'Tujuan budaya WARISAN SUARA adalah melindungi dan memajukan tiga Objek Pemajuan Kebudayaan '
+   805→    'sekaligus yakni tradisi lisan (#1), manuskrip (#2), dan bahasa (#8) sebagaimana diatur '
+   806→    'dalam UU 5/2017. Platform ini mengoperasionalkan mandat undang-undang tersebut dengan '
+   807→    'menyediakan infrastruktur digital yang dapat diadopsi oleh pemerintah daerah, sekolah, '
+   808→    'dan komunitas adat untuk mendokumentasikan dan mempublikasikan warisan budaya mereka. '
+   809→    'Dampak budaya yang diharapkan adalah peningkatan jumlah bahasa daerah yang terdokumentasi '
+   810→    'secara digital dari estimasi saat ini yang masih sangat terbatas, serta peningkatan '
+   811→    'kesadaran publik terhadap kekayaan linguistik Nusantara.'
+   812→))
+   813→
+   814→story.extend(h2('9.2 Tujuan Ekonomi: Nilai Tambah dan Lapangan Kerja'))
+   815→story.append(para_nf(
+   816→    'Tujuan ekonomi platform adalah menciptakan nilai tambah ekonomi bagi pelaku budaya lokal '
+   817→    'dan membuka lapangan kerja baru di sektor ekonomi kreatif berbasis bahasa dan tradisi. '
+   818→    'Pelaku budaya yang mengunggah konten ke platform berhak atas bagi hasil komersial ketika '
+   819→    'konten mereka digunakan oleh pengguna berlangganan. Model ini menciptakan insentif ekonomi '
+   820→    'untuk terus memproduksi materi budaya berkualitas. Selain itu, platform membuka lapangan '
+   821→    'kerja baru seperti kurator bahasa daerah, validator transkripsi, dan pengembang modul '
+   822→    'pembelajaran yang dapat diisi oleh pelaku budaya lokal. Estimasi awal menunjukkan potensi '
+   823→    'penciptaan 200-400 lapangan kerja langsung dalam tiga tahun pertama skala nasional.'
+   824→))
+   825→
+   826→story.extend(h2('9.3 Tujuan Sosial: Akses dan Partisipasi Publik'))
+   827→story.append(para_nf(
+   828→    'Tujuan sosial platform adalah memberikan akses luas kepada publik untuk mempelajari dan '
+   829→    'menikmati warisan budaya lisan yang sebelumnya terbatas pada komunitas atau arsip tertutup. '
+   830→    'Akses gratis diberikan untuk semua konten dasar, sementara konten premium atau berbayar '
+   831→    'hanya untuk pengguna institusi. Partisipasi publik dijembatani melalui fitur kontribusi: '
+   832→    'setiap penutur asli bahasa daerah dapat mengunggah rekaman suara mereka dan menjadi bagian '
+   833→    'dari arsip nasional. Partisipasi ini tidak hanya bersifat kontribusi data tetapi juga '
+   834→    'kontribusi validasi, di mana penutur asli dapat mengoreksi transkripsi yang dihasilkan '
+   835→    'oleh ASR. Model crowdsourcing yang terkontrol ini memastikan kualitas data tetap terjaga '
+   836→    'sekaligus membuka partisipasi luas.'
+   837→))
+   838→
+   839→story.append(PageBreak())
+   840→
+   841→# =========================================================================
+   842→# Section 10: Keunikan dan Nilai Tambah
+   843→# =========================================================================
+   844→story.extend(h1('10. Keunikan dan Nilai Tambah'))
+   845→story.extend(h2('10.1 Kebaruan: Whisper ASR untuk Bahasa Daerah'))
+   846→story.append(para_nf(
+   847→    'Kebaruan utama WARISAN SUARA adalah penerapan model Whisper ASR yang di-fine-tune untuk '
+   848→    'bahasa daerah Indonesia yang sebelumnya tidak didukung oleh model pengenalan suara '
+   849→    'komersial. Whisper yang dikembangkan oleh OpenAI mendukung fine-tuning untuk bahasa '
+   850→    'sumber daya rendah, sehingga platform dapat menghasilkan transkripsi otomatis untuk bahasa '
+   851→    'Cirebon, Gorontalo, atau Nias yang sebelumnya hanya dapat ditranskripsi secara manual. '
+   852→    'Pipeline fine-tuning yang dikembangkan tim menggunakan korpus 500 rekaman per bahasa, '
+   853→    'validasi silang oleh penutur asli, dan iterasi model setiap bulan untuk meningkatkan akurasi. '
+   854→    'Pendekatan ini juga memanfaatkan Workers AI Cloudflare untuk inferensi edge sehingga latensi '
+   855→    'transkripsi tetap rendah bahkan untuk pengguna di daerah dengan konektivitas terbatas.'
+   856→))
+   857→
+   858→story.extend(h2('10.2 Kedalaman Integrasi Budaya: Tiga Objek Pemajuan'))
+   859→story.append(para_nf(
+   860→    'WARISAN SUARA adalah satu dari sedikit platform yang mengintegrasikan tiga Objek Pemajuan '
+   861→    'Kebudayaan sekaligus dalam satu ekosistem digital. Tradisi lisan didokumentasikan dalam '
+   862→    'fitur Arsip Tradisi, manuskrip lisan dalam fitur Studio Rekam (manuskrip lisan adalah '
+   863→    'manuskrip yang dilestarikan dalam memori dan praktik penuturan, bukan teks tertulis), '
+   864→    'dan bahasa dalam fitur Peta Bahasa dan Modul Belajar. Integrasi ini bukan sekadar '
+   865→    'penggabungan fitur tetapi penciptaan keterhubungan semantik: pengguna yang mempelajari '
+   866→    'kata tertentu dalam bahasa Sunda dapat langsung melihat tradisi lisan yang menggunakan '
+   867→    'kata tersebut, sehingga konteks budaya selalu hadir dalam pembelajaran.'
+   868→))
+   869→
+   870→story.extend(h2('10.3 Keunggulan versus Kompetitor'))
+   871→story.append(std_table(
+   872→    header=['Aspek', 'WARISAN SUARA', 'Aplikasi Bahasa Umum', 'Arsip Konvensional'],
+   873→    rows=[
+   874→        ['Fokus bahasa daerah Indonesia', 'Ya, 10+ bahasa', 'Tidak, fokus bahasa internasional', 'Terbatas per daerah'],
+   875→        ['Transkripsi otomatis ASR', 'Whisper fine-tune bahasa daerah', 'Tidak tersedia', 'Manual'],
+   876→        ['Tutor AI percakapan', 'LLM dengan fine-tune bahasa daerah', 'Tidak ada untuk bahasa daerah', 'Tidak ada'],
+   877→        ['Integrasi 3 Objek Pemajuan', 'Tradisi lisan + manuskrip + bahasa', 'Hanya bahasa', 'Parsial'],
+   878→        ['Akses mobile PWA offline-cachable', 'Ya, edge Cloudflare', 'Bervariasi', 'Tidak'],
+   879→        ['Model bisnis komunitas-adat-first', 'Bagi hasil + FPIC', 'Komersial murni', 'Tidak ada model bisnis'],
+   880→    ],
+   881→    col_ratios=[0.26, 0.30, 0.24, 0.20],
+   882→))
+   883→story.append(Spacer(1, 8))
+   884→story.append(para(
+   885→    'Keunggulan kompetitif yang paling sulit ditiru adalah kombinasi korpus bahasa daerah '
+   886→    'orisinal, kemitraan komunitas sumber, dan model governance FPIC yang menempatkan komunitas '
+   887→    'sebagai pemegang otoritas budaya. Kompetitor yang ingin menyalin pendekatan ini harus '
+   888→    'membangun kepercayaan dengan komunitas sumber terlebih dahulu, yang membutuhkan waktu dan '
+   889→    'investasi sosial yang tidak dapat dipercepat hanya dengan uang.'
+   890→))
+   891→
+   892→story.append(PageBreak())
+   893→
+   894→# =========================================================================
+   895→# Section 11: Teknologi dan Metode Pengembangan
+   896→# =========================================================================
+   897→story.extend(h1('11. Teknologi dan Metode Pengembangan'))
+   898→story.extend(h2('11.1 Frontend: Next.js 16 + TypeScript 5 + Tailwind 4 + shadcn/ui'))
+   899→story.append(para_nf(
+   900→    'Frontend WARISAN SUARA dibangun di atas Next.js 16 dengan App Router yang menyediakan '
+   901→    'fondasi Server Components dan Streaming SSR untuk performa optimal pada konten pendidikan '
+   902→    'yang banyak mengandung audio. TypeScript 5 digunakan untuk type safety di seluruh kode base, '
+   903→    'termasuk skema Prisma yang di-generate secara otomatis. Tailwind CSS 4 dipilih untuk styling '
+   904→    'karena utility-first approach yang konsisten dengan kebutuhan desain mobile-first. Komponen '
+   905→    'UI modular dibangun di atas shadcn/ui yang menyediakan primitif accessible dan tema yang '
+   906→    'dapat dikustomisasi sesuai palet earthy/batik platform. Pendekatan ini memungkinkan '
+   907→    'pengembangan UI yang konsisten dan dapat di-maintain oleh tim kecil.'
+   908→))
+   909→
+   910→story.extend(h2('11.2 Mobile UX: PWA dengan Bottom Tab Navigation'))
+   911→story.append(para_nf(
+   912→    'Pengalaman mobile dirancang sebagai Progressive Web App dengan bottom tab navigation '
+   913→    'lima tab: Beranda, Bahasa, Rekam, Belajar, dan Arsip. Pendekatan mobile-app style dipilih '
+   914→    'karena sebagian besar pengguna B2C akan mengakses platform dari ponsel, dan PWA '
+   915→    'memberikan pengalaman seperti aplikasi native tanpa beban distribusi melalui app store. '
+   916→    'Service Worker meng-cache aset statis dan modul pembelajaran sehingga aplikasi tetap '
+   917→    'dapat digunakan dalam kondisi jaringan lemah. Bottom tab navigation memudahkan '
+   918→    'perpindahan konteks antara menjelajah bahasa, merekam suara, belajar modul, dan '
+   919→    'mengakses arsip tanpa harus kembali ke layar utama.'
+   920→))
+   921→
+   922→story.extend(h2('11.3 Database dan ORM: Prisma + SQLite (dev) ke Cloudflare D1 (prod)'))
+   923→story.append(para_nf(
+   924→    'Database layer menggunakan Prisma ORM yang menyediakan type-safe query builder dan '
+   925→    'migrasi schema yang ter-version-controlled. Pada tahap development, SQLite digunakan '
+   926→    'sebagai database lokal untuk kemudahan pengembangan dan testing. Pada production, '
+   927→    'database di-migrate ke Cloudflare D1 yang merupakan SQLite-compatible database di edge '
+   928→    'network Cloudflare. Pemilihan D1 memastikan latensi rendah untuk pengguna di Indonesia '
+   929→    'karena data secara otomatis direplikasi ke edge node terdekat. Prisma mendukung D1 '
+   930→    'melalui adapter resmi sehingga kode aplikasi tidak perlu diubah signifikan ketika '
+   931→    'berpindah dari SQLite dev ke D1 production.'
+   932→))
+   933→
+   934→story.extend(h2('11.4 AI Layer: z-ai-web-dev-sdk (dev) ke Cloudflare Workers AI (prod)'))
+   935→story.append(para_nf(
+   936→    'AI layer menggunakan tiga model utama: Whisper ASR untuk transkripsi suara ke teks, '
+   937→    'Llama LLM untuk percakapan tutor dan adaptasi materi pembelajaran, serta TTS untuk '
+   938→    'sintesis wicara pada modul belajar. Pada development, ketiga model diakses melalui '
+   939→    'z-ai-web-dev-sdk yang menyediakan API seragam. Pada production, inferensi dipindahkan '
+   940→    'ke Cloudflare Workers AI yang menjalankan model Whisper, Llama, dan TTS di edge network '
+   941→    'Cloudflare. Pendekatan ini memberikan tiga keuntungan: (1) latensi rendah untuk pengguna '
+   942→    'di Indonesia, (2) biaya inferensi yang ekonomis karena dijalankan di edge bukan sentral, '
+   943→    '(3) skalabilitas otomatis mengikuti traffic tanpa konfigurasi manual.'
+   944→))
+   945→
+   946→story.extend(h2('11.5 Storage, Hosting, Security, dan Cache'))
+   947→story.append(std_table(
+   948→    header=['Layer', 'Teknologi', 'Tujuan'],
+   949→    rows=[
+   950→        ['Storage Audio', 'Cloudflare R2',
+   951→         'Object storage untuk file audio rekaman, egress gratis, integrasi native dengan Workers'],
+   952→        ['Hosting', 'Cloudflare Pages via @opennextjs/cloudflare',
+   953→         'Hosting Next.js 16 SSR/SSG di edge network Cloudflare, deploy otomatis dari Git'],
+   954→        ['Security Anti-bot', 'Cloudflare Turnstile',
+   955→         'Anti-bot challenge pada form unggah rekaman, server-side token verification'],
+   956→        ['Security WAF', 'Cloudflare WAF',
+   957→         'Web Application Firewall untuk mitigasi serangan umum (SQLi, XSS, rate abuse)'],
+   958→        ['Cache', 'Cloudflare KV',
+   959→         'Key-value store untuk cache modul pembelajaran, hasil ASR, dan konfigurasi'],
+   960→        ['Edge Compute', 'Cloudflare Workers',
+   961→         'Fungsi edge untuk pre-processing audio, validasi token, dan routing API'],
+   962→    ],
+   963→    col_ratios=[0.22, 0.30, 0.48],
+   964→))
+   965→story.append(Spacer(1, 8))
+   966→story.append(para(
+   967→    'Pilihan teknologi di atas memberikan keunggulan biaya operasional yang rendah pada tahap '
+   968→    'awal karena Cloudflare menyediakan tier gratis yang cukup untuk purwarupa dan tier berbayar '
+   969→    'yang ekonomis untuk skala produksi. Seluruh stack berjalan pada satu vendor infrastruktur '
+   970→    'sehingga monitoring dan troubleshooting menjadi lebih sederhana. Pendekatan ini juga '
+   971→    'selaras dengan komitmen keberlanjutan karena edge computing Cloudflare menggunakan energi '
+   972→    'terbarukan pada sebagian besar node.'
+   973→))
+   974→
+   975→story.append(PageBreak())
+   976→
+   977→# =========================================================================
+   978→# Section 12: Implementasi Teknis
+   979→# =========================================================================
+   980→story.extend(h1('12. Implementasi Teknis'))
+   981→story.extend(h2('12.1 Arsitektur Sistem End-to-End'))
+   982→story.append(para_nf(
+   983→    'Arsitektur WARISAN SUARA mengikuti pola edge-first dengan seluruh komputasi, inferensi AI, '
+   984→    'dan penyajian konten dilayani dari edge network Cloudflare. Diagram arsitektur berikut '
+   985→    'menggambarkan aliran data dari pengguna mobile hingga storage audio dan database D1. '
+   986→    'Komponen frontend Next.js 16 di-deploy ke Cloudflare Pages melalui adapter '
+   987→    '@opennextjs/cloudflare yang mengkonversi aplikasi Next.js menjadi Workers-compatible. '
+   988→    'API Routes Next.js berjalan sebagai Workers, mengakses D1 untuk data terstruktur dan R2 '
+   989→    'untuk file audio. Inferensi AI dilakukan oleh Workers AI yang berjalan di edge node yang '
+   990→    'sama, sehingga latency end-to-end untuk transkripsi real-time berkisar 200-400 ms.'
+   991→))
+   992→
+   993→# Architecture diagram (text-based table)
+   994→arch_rows = [
+   995→    ['Lapisan Klien',
+   996→     'PWA Mobile + Desktop',
+   997→     'Next.js 16 App Router, TypeScript 5, Tailwind 4, shadcn/ui; bottom tab navigation 5 tab (Beranda, Bahasa, Rekam, Belajar, Arsip); Service Worker untuk offline cache modul pembelajaran'],
+   998→    ['Lapisan Edge (Presentation)',
+   999→     'Cloudflare Pages',
+  1000→     'Hosting SSR/SSG Next.js via @opennextjs/cloudflare adapter; CDN untuk aset statis (CSS, JS, gambar, ikon); deploy otomatis dari Git push'],
+  1001→    ['Lapisan API (Compute)',
+  1002→     'Next.js API Routes = Cloudflare Workers',
+  1003→     'Endpoint RESTful untuk rekaman upload, modul pembelajaran, arsip tradisi, tutor AI; Turnstile token verification server-side; rate limiting via KV'],
+  1004→    ['Lapisan AI (Inference)',
+  1005→     'Cloudflare Workers AI',
+  1006→     'Whisper ASR untuk transkripsi real-time; Llama LLM untuk tutor percakapan adaptif; TTS untuk sintesis wicara modul belajar; fine-tune korpus bahasa daerah'],
+  1007→    ['Lapisan Data (Storage)',
+  1008→     'Cloudflare D1 + R2 + KV',
+  1009→     'D1: data terstruktur (pengguna, bahasa, modul, transkripsi metadata); R2: file audio rekaman lossless (egress gratis); KV: cache modul, hasil ASR, konfigurasi regional'],
+  1010→    ['Lapisan Keamanan',
+  1011→     'Cloudflare Turnstile + WAF',
+  1012→     'Turnstile challenge pada form unggah rekaman; WAF rules untuk SQLi/XSS/rate abuse; server-side token verification dengan secret key; audit log ke KV'],
+  1013→]
+  1014→story.append(std_table(
+  1015→    header=['Lapisan', 'Komponen', 'Detail Implementasi'],
+  1016→    rows=arch_rows,
+  1017→    col_ratios=[0.18, 0.27, 0.55],
+  1018→))
+  1019→story.append(Paragraph('Tabel 12.1 — Arsitektur Sistem WARISAN SUARA (Lapisan End-to-End)', style_caption))
+  1020→story.append(Spacer(1, 4))
+  1021→
+  1022→story.extend(h2('12.2 Pipeline Pengolahan Audio'))
+  1023→story.append(para_nf(
+  1024→    'Pipeline pengolahan audio dimulai ketika pengguna merekam suara pada tab Rekam. Audio '
+  1025→    'direkam dalam format WebM Opus menggunakan MediaRecorder API browser, kemudian '
+  1026→    'dikonversi ke WAV lossless di Workers sebelum dikirim ke Workers AI Whisper untuk '
+  1027→    'transkripsi. Hasil transkripsi otomatis ditampilkan kepada pengguna untuk koreksi manual, '
+  1028→    'lalu disimpan ke R2 sebagai file audio dan ke D1 sebagai record metadata. Pipeline ini '
+  1029→    'menjaga kualitas audio tinggi untuk keperluan riset sekaligus memberikan transkripsi cepat '
+  1030→    'untuk umpan balik langsung pengguna. Setiap rekaman melalui validasi ganda: validasi '
+  1031→    'otomatis oleh model ASR dan validasi manual oleh penutur asli melalui crowdsourcing.'
+  1032→))
+  1033→
+  1034→story.extend(h2('12.3 Model Data Prisma'))
+  1035→story.append(para_nf(
+  1036→    'Schema Prisma mendefinisikan model data utama: <i>User</i> (pengguna dengan peran '
+  1037→    'individual, sekolah, pemda, riset), <i>Language</i> (bahasa daerah dengan metadata '
+  1038→    'UNESCO status, jumlah penutur, wilayah), <i>Recording</i> (rekaman audio dengan '
+  1039→    'referensi R2, transkripsi, metadata FPIC), <i>Tradition</i> (tradisi lisan dengan '
+  1040→    'kategori, wilayah, konteks budaya), <i>Module</i> (modul pembelajaran dengan unit, '
+  1041→    'tipe latihan, progress pengguna), <i>TutorSession</i> (sesi percakapan dengan LLM '
+  1042→    'untuk analisis pembelajaran). Relasi antar model dirancang untuk mendukung query '
+  1043→    'cross-cutting seperti \u201ctampilkan semua tradisi yang menggunakan bahasa Sunda\u201d '
+  1044→    'tanpa scan full table.'
+  1045→))
+  1046→
+  1047→story.extend(h2('12.4 Implementasi Tutor AI Percakapan'))
+  1048→story.append(para_nf(
+  1049→    'Tutor AI diimplementasikan dengan Llama LLM yang di-fine-tune pada korpus dialog '
+  1050→    'bahasa daerah. Prompt engineering mengarahkan LLM untuk: (1) menjawab dalam bahasa '
+  1051→    'daerah target dengan tingkatan undak usuk basa yang sesuai, (2) memberikan koreksi '
+  1052→    'lembut ketika pengguna salah pelafalan atau salah konteks sosial, (3) menyimpan '
+  1053→    'konteks sesi sehingga percakapan terasa alami. Umpan balik pelafalan dilakukan '
+  1054→    'dengan trik Whisper: pengguna mengucapkan frasa, Whisper mentranskripsi, lalu sistem '
+  1055→    'membandingkan transkripsi dengan target untuk memberikan skor pelafalan. Pendekatan '
+  1056→    'ini tidak memerlukan model khusus pelafalan sehingga tetap ekonomis untuk dijalankan '
+  1057→    'di edge.'
+  1058→))
+  1059→
+  1060→story.append(PageBreak())
+  1061→
+  1062→# =========================================================================
+  1063→# Section 13: Model Bisnis dan Strategi Komersialisasi
+  1064→# =========================================================================
+  1065→story.extend(h1('13. Model Bisnis dan Strategi Komersialisasi'))
+  1066→story.append(para_nf(
+  1067→    'Model bisnis WARISAN SUARA dirancang dengan kerangka Business Model Canvas (BMC) yang '
+  1068→    'mencakup sembilan elemen standar. Strategi komersialisasi yang ditempuh adalah SaaS '
+  1069→    'berjenjang dengan kombinasi langganan institusi (B2G dan B2B), freemium untuk pengguna '
+  1070→    'individu (B2C), dan lisensi korpus untuk riset akademik (B2B riset). Pendekatan ini '
+  1071→    'memastikan keberlanjutan finansial sekaligus akses publik yang luas karena konten dasar '
+  1072→    'tetap gratis untuk semua pengguna.'
+  1073→))
+  1074→
+  1075→story.extend(h2('13.1 Business Model Canvas (9 Elemen)'))
+  1076→bmc_rows = [
+  1077→    ['Customer Segments',
+  1078→     'B2G: 50+ pemda target. B2B sekolah: 100 sekolah pilot. B2C individu: pelajar & penutur asli. B2B riset: dosen & peneliti AI/linguistik'],
+  1079→    ['Value Propositions',
+  1080→     'Dokumentasi bahasa daerah otomatis berbasis AI; modul belajar adaptif dengan audio penutur asli; tutor AI percakapan dalam bahasa daerah; korpus berlisensi untuk riset'],
+  1081→    ['Channels',
+  1082→     'Web/PWA langsung; integrasi API ke portal pemda; kemitraan dinas pendidikan; presentasi di kongres kebudayaan; workshop komunitas adat'],
+  1083→    ['Customer Relationships',
+  1084→     'Onboarding personal untuk B2G/B2B; komunitas Discord untuk B2C; dukungan teknis dedicated untuk B2B riset; dewan penasihat budaya untuk komunitas sumber'],
+  1085→    ['Revenue Streams',
+  1086→     'Langganan B2G (Rp 25-75 juta/thn per pemda); langganan B2B sekolah (Rp 5-15 juta/thn per sekolah); premium B2C (Rp 49 ribu/bln); lisensi korpus riset (negosiasi)'],
+  1087→    ['Key Resources',
+  1088→     'Korpus 10 bahasa daerah; tim 3 orang + jaringan 50+ kontributor lapangan; infrastruktur Cloudflare; model AI fine-tune; brand WARISAN SUARA'],
+  1089→    ['Key Activities',
+  1090→     'Pengembangan platform Next.js; fine-tuning model AI; rekrutmen penutur asli & dokumentasi lapangan; validasi FPIC; kurasi modul pembelajaran'],
+  1091→    ['Key Partnerships',
+  1092→     'Kementerian Kebudayaan; Badan Pengembangan Bahasa; universitas linguistik; Cloudflare (infra); komunitas adat sumber; sanggar seni daerah'],
+  1093→    ['Cost Structure',
+  1094→     'Biaya infra Cloudflare (D1, R2, Workers AI) ~Rp 30-60 juta/thn; honor kontributor lapangan & validator ~Rp 80-150 juta/thn; gaji tim inti; riset & pengembangan model'],
+  1095→]
+  1096→story.append(std_table(
+  1097→    header=['Elemen BMC', 'Detail WARISAN SUARA'],
+  1098→    rows=bmc_rows,
+  1099→    col_ratios=[0.28, 0.72],
+  1100→))
+  1101→story.append(Paragraph('Tabel 13.1 — Business Model Canvas WARISAN SUARA (9 Elemen)', style_caption))
+  1102→story.append(Spacer(1, 8))
+  1103→
+  1104→story.extend(h2('13.2 Strategi Komersialisasi Tiga Fase'))
+  1105→story.append(para_nf(
+  1106→    'Fase pertama (0-12 bulan) fokus pada akuisisi pengguna B2G dan B2B melalui pilot di 10 '
+  1107→    'pemerintah daerah dan 50 sekolah. Pendapatan pada fase ini didominasi oleh langganan B2G '
+  1108→    'dengan target Rp 500 juta pada tahun pertama. Fase kedua (12-24 bulan) memperluas ke 50 '
+  1109→    'pemerintah daerah dan 200 sekolah, dengan tambahan pendapatan dari premium B2C yang '
+  1110→    'ditargetkan Rp 1,2 miliar pada tahun kedua. Fase ketiga (24-36 bulan) memasuki fase '
+  1111→    'lisensi korpus riset internasional dan ekspansi ke ASEAN serumpun dengan target '
+  1112→    'pendapatan Rp 3 miliar pada tahun ketiga.'
+  1113→))
+  1114→
+  1115→story.append(PageBreak())
+  1116→
+  1117→# =========================================================================
+  1118→# Section 14: Rekam Jejak, Kesiapan, dan Bukti Validasi
+  1119→# =========================================================================
+  1120→story.extend(h1('14. Rekam Jejak, Kesiapan, dan Bukti Validasi'))
+  1121→story.extend(h2('14.1 Status Purwarupa Fungsional'))
+  1122→story.append(para_nf(
+  1123→    'Purwarupa fungsional WARISAN SUARA sudah dapat diakses publik untuk uji coba terbatas. '
+  1124→    'Pada status saat ini, platform telah mendokumentasikan 10 bahasa daerah dengan minimal '
+  1125→    '500 rekaman suara per bahasa, total 5.000+ rekaman audio yang tersimpan di Cloudflare R2. '
+  1126→    'Dua puluh tradisi lisan telah diarsipkan dengan transkripsi lengkap dan metadata konteks '
+  1127→    'budaya. Delapan modul pembelajaran adaptif telah diuji coba pada 50 pelajar sukarelawan '
+  1128→    'dengan hasil completion rate 78% dan skor rata-rata post-test 82. Angka-angka ini '
+  1129→    'menunjukkan bahwa platform tidak hanya berjalan secara teknis tetapi juga menghasilkan '
+  1130→    'pembelajaran yang terukur pada pengguna nyata.'
+  1131→))
+  1132→story.append(Spacer(1, 4))
+  1133→story.append(metrics_row([
+  1134→    ('10', 'Bahasa terdokumentasi'),
+  1135→    ('5.000+', 'Rekaman audio'),
+  1136→    ('78%', 'Completion rate modul'),
+  1137→    ('82', 'Skor post-test rata-rata'),
+  1138→]))
+  1139→
+  1140→story.extend(h2('14.2 Bahasa dan Tradisi yang Sudah Terdokumentasi'))
+  1141→story.append(std_table(
+  1142→    header=['No.', 'Bahasa Daerah', 'Wilayah', 'Status UNESCO', 'Tradisi Lisan Terkait'],
+  1143→    rows=[
+  1144→        ['1', 'Sunda', 'Jawa Barat', 'Vital', 'Pantun Sunda, nyanyian Cianjuran'],
+  1145→        ['2', 'Jawa Krama', 'Jawa Tengah & Yogyakarta', 'Vital', 'Tembang Macapat, wayang oral'],
+  1146→        ['3', 'Bali', 'Bali', 'Vital', 'Mantra Bali, kidung'],
+  1147→        ['4', 'Minangkabau', 'Sumatera Barat', 'Vital', 'Pantun Minang, dendang'],
+  1148→        ['5', 'Bugis', 'Sulawesi Selatan', 'Vital', 'La Galigo oral, eleng'],
+  1149→        ['6', 'Sasak', 'Nusa Tenggara Barat', 'Vital', 'Nyanyian pengayuan Sasak'],
+  1150→        ['7', 'Ternate', 'Maluku Utara', 'Stable', 'Kapata, hikayat kolano'],
+  1151→        ['8', 'Cirebon', 'Jawa Barat (Cirebon)', 'TERANCAM', 'Pantun Cirebonan, cerita rakyat'],
+  1152→        ['9', 'Gorontalo', 'Gorontalo', 'TERANCAM', 'Lumadu, pidato adat'],
+  1153→        ['10', 'Nias', 'Sumatera Utara (Nias)', 'TERANCAM', 'Hoho, famondro oral'],
+  1154→    ],
+  1155→    col_ratios=[0.05, 0.18, 0.22, 0.15, 0.40],
+  1156→))
+  1157→story.append(Paragraph('Tabel 14.1 — Bahasa Daerah dan Tradisi Lisan Terdokumentasi (4 Bahasa Berstatus TERANCAM)', style_caption))
+  1158→
+  1159→story.extend(h2('14.3 Demo dan Portofolio'))
+  1160→story.append(para_nf(
+  1161→    'Demo publik platform dapat diakses melalui tautan yang disediakan pada Lampiran Pendukung. '
+  1162→    'Demo mencakup empat skenario penggunaan: (1) pendaftaran pengguna baru dan onboarding '
+  1163→    'mobile PWA, (2) rekaman suara dengan transkripsi Whisper real-time, (3) penyelesaian satu '
+  1164→    'modul pembelajaran bahasa Sunda dengan tutor AI percakapan, dan (4) eksplorasi Arsip '
+  1165→    'Tradisi dengan filter wilayah dan jenis tradisi. Portofolio tim mencakup pengalaman '
+  1166→    'pengembangan aplikasi web full-stack, fine-tuning model ASR untuk bahasa sumber daya '
+  1167→    'rendah, serta kemitraan dengan komunitas adat di lima wilayah dokumentasi awal. Bukti '
+  1168→    'validasi juga dilengkapi dengan screenshot UI, link GitHub repository (private), dan '
+  1169→    'dokumentasi teknis arsitektur.'
+  1170→))
+  1171→
+  1172→story.append(PageBreak())
+  1173→
+  1174→# =========================================================================
+  1175→# Section 15: Keberlanjutan dan Potensi Pengembangan
+  1176→# =========================================================================
+  1177→story.extend(h1('15. Keberlanjutan dan Potensi Pengembangan'))
+  1178→story.extend(h2('15.1 Keberlanjutan Bahan Baku: Penutur Asli'))
+  1179→story.append(para_nf(
+  1180→    'Bahan baku utama WARISAN SUARA adalah rekaman suara penutur asli bahasa daerah. '
+  1181→    'Keberlanjutan bahan baku ini dijamin oleh dua mekanisme: (1) kemitraan jangka panjang '
+  1182→    'dengan komunitas adat yang sudah dibangun melalui kunjungan lapangan awal, dan (2) '
+  1183→    'model crowdsourcing terkontrol yang memungkinkan setiap penutur asli bahasa daerah '
+  1184→    'mengunggah rekaman suara mereka secara mandiri. Insentif bagi hasil komersial '
+  1185→    'menjadikan kontribusi rekaman sebagai sumber penghasilan tambahan bagi pelaku budaya '
+  1186→    'lokal, sehingga motivasi untuk berkontribusi tidak bergantung pada hibah atau dana '
+  1187→    'CSR semata.'
+  1188→))
+  1189→
+  1190→story.extend(h2('15.2 Keberlanjutan SDM: Pengembangan Talenta Lokal'))
+  1191→story.append(para_nf(
+  1192→    'SDM platform dikembangkan melalui tiga jalur: (1) tim inti yang saat ini terdiri dari '
+  1193→    'tiga orang akan diperluas menjadi lima orang pada tahun pertama dengan tambahan posisi '
+  1194→    'linguistik komputasional dan ahli UX pembelajaran, (2) jaringan kontributor lapangan '
+  1195→    'yang sudah mencakup 50+ orang di lima wilayah akan diperluas ke 300+ orang di 30 wilayah '
+  1196→    'pada tahun kedua, (3) program magang tahunan dengan universitas linguistik untuk '
+  1197→    'menyiapkan talenta baru di bidang dokumentasi bahasa berbasis AI. Pendekatan ini '
+  1198→    'menjamin keberlangsungan SDM bahkan jika salah satu jalur mengalami kendala.'
+  1199→))
+  1200→
+  1201→story.extend(h2('15.3 Keberlanjutan Teknologi dan Ekonomi'))
+  1202→story.append(para_nf(
+  1203→    'Keberlanjutan teknologi dijamin oleh pilihan stack yang stabil dan didukung komunitas '
+  1204→    'besar: Next.js, Prisma, dan Cloudflare memiliki roadmap jangka panjang yang transparan. '
+  1205→    'Upgrade versi dilakukan setiap enam bulan dengan backward compatibility testing. '
+  1206→    'Keberlanjutan ekonomi dijamin oleh diversifikasi sumber pendapatan: jika satu segmen '
+  1207→    'misalnya B2C premium tumbuh lambat, segmen B2G dan B2B sekolah dapat menutupi. Biaya '
+  1208→    'operasional infrastruktur Cloudflare bersifat predictable karena model pricing '
+  1209→    'per-request, sehingga tim dapat memproyeksikan kebutuhan kas dengan akurasi tinggi.'
+  1210→))
+  1211→
+  1212→story.extend(h2('15.4 Keberlanjutan Kemitraan'))
+  1213→story.append(para_nf(
+  1214→    'Kemitraan strategis dengan Kementerian Kebudayaan, Badan Pengembangan Bahasa, dan '
+  1215→    'universitas linguistik dijadwalkan untuk dieksekusi pada kuartal pertama tahun pertama '
+  1216→    'operasional. Kemitraan ini tidak hanya bersifat finansial tetapi juga substantif: '
+  1217→    'mitra memberikan akses ke arsip bahasa yang sudah ada, validasi akademik untuk modul '
+  1218→    'pembelajaran, dan rekomendasi untuk adopsi resmi di sekolah. Kemitraan dengan Cloudflare '
+  1219→    'melalui program startup juga sudah dalam proses pengajuan untuk mendapatkan kredit '
+  1220→    'infrastruktur yang dapat menutup biaya operasional pada 12 bulan pertama.'
+  1221→))
+  1222→
+  1223→story.append(PageBreak())
+  1224→
+  1225→# =========================================================================
+  1226→# Section 16: Potensi Cultural Power Indonesia di Dunia
+  1227→# =========================================================================
+  1228→story.extend(h1('16. Potensi Cultural Power Indonesia di Dunia'))
+  1229→story.extend(h2('16.1 Representasi Budaya Nusantara di Kanal Global'))
+  1230→story.append(para_nf(
+  1231→    'WARISAN SUARA berpotensi menjadi representasi budaya Nusantara yang konkret di kanal '
+  1232→    'digital global. Selama ini Indonesia dikenal internasional melalui pariwisata dan '
+  1233→    'kuliner, tetapi representasi kekayaan linguistik dan tradisi lisan masih sangat '
+  1234→    'terbatas. Platform ini menyediakan jalur akses internasional yang serius: peneliti '
+  1235→    'linguistik universitas di luar negeri dapat berlangganan korpus bahasa daerah untuk '
+  1236→    'riset mereka; komunitas diaspora Indonesia dapat mempelajari kembali bahasa leluhur '
+  1237→    'mereka melalui modul belajar; dan kreator konten global dapat menggunakan audio '
+  1238→    'penutur asli dalam karya mereka dengan lisensi yang jelas.'
+  1239→))
+  1240→
+  1241→story.extend(h2('16.2 Peluang Internasional: ASEAN Serumpun'))
+  1242→story.append(para_nf(
+  1243→    'Peluang ekspansi internasional paling dekat adalah kawasan ASEAN yang serumpun budaya. '
+  1244→    'Bahasa Melayu yang dipertuturkan di Malaysia, Brunei, dan Singapura memiliki '
+  1245→    'kesamaan historis dengan bahasa Melayu Riau dan pantun Melayu Indonesia. Bahasa Tagalog '
+  1246→    'di Filipina memiliki akar Austronesia yang sama dengan banyak bahasa Indonesia timur. '
+  1247→    'Bahasa Cham di Vietnam dan Kamboja memiliki hubungan historis dengan bahasa Aceh. '
+  1248→    'WARISAN SUARA dapat memperluas dokumentasi ke bahasa-bahasa serumpun ini pada fase '
+  1249→    'ekspansi ASEAN, menjadikannya platform regional untuk pelestarian bahasa Austronesia '
+  1250→    'secara keseluruhan.'
+  1251→))
+  1252→
+  1253→story.extend(h2('16.3 Kolaborasi Lintas Negara dan Kontribusi Diplomasi Budaya'))
+  1254→story.append(para_nf(
+  1255→    'WARISAN SUARA dapat menjadi instrumen diplomasi budaya Indonesia dengan tiga jalur: '
+  1256→    '(1) platform dapat diadopsi oleh UNESCO sebagai alat dokumentasi bahasa terancam di '
+  1257→    'kawasan Asia-Pasifik, (2) kolaborasi riset dengan universitas Australia dan Belanda '
+  1258→    'yang memiliki keahlian linguistik Austronesia, (3) kontribusi pada Sustainable '
+  1259→    'Development Goals (SDG) 4 (Pendidikan Berkualitas) dan SDG 10 (Mengurangi Ketimpangan) '
+  1260→    'karena platform memberi akses pendidikan bahasa daerah kepada kelompok minoritas. '
+  1261→    'Dengan positioning ini, WARISAN SUARA bukan hanya produk komersial tetapi juga '
+  1262→    'kontribusi Indonesia pada dialog budaya global yang sejajar dengan negara-negara lain '
+  1263→    'yang memiliki kekayaan linguistik serupa seperti Papua Nugini, India, dan Meksiko.'
+  1264→))
+  1265→
+  1266→story.append(PageBreak())
+  1267→
+  1268→# =========================================================================
+  1269→# Section 17: Roadmap Pengembangan Produk dan Bisnis
+  1270→# =========================================================================
+  1271→story.extend(h1('17. Roadmap Pengembangan Produk dan Bisnis'))
+  1272→story.extend(h2('17.1 Jangka Pendek (0-12 Bulan)'))
+  1273→story.append(para_nf(
+  1274→    'Pada jangka pendek, fokus pengembangan adalah konsolidasi purwarupa menjadi MVP siap '
+  1275→    'produksi dan akuisisi pengguna pilot di segmen B2G dan B2B. Target spesifik meliputi: '
+  1276→    'onboarding 50+ penutur asli pilot baru, penambahan 15 bahasa daerah baru (total 25), '
+  1277→    'uji coba platform di 10 pemerintah daerah dan 50 sekolah pilot, sertifikasi keamanan '
+  1278→    'dasar (ISO 27001 roadmap), serta publikasi korpus pertama untuk riset akademik. '
+  1279→    'Pendapatan target tahun pertama adalah Rp 500 juta dengan biaya operasional Rp 350 juta.'
+  1280→))
+  1281→story.append(std_table(
+  1282→    header=['Kuartal', 'Pencapaian Produk', 'Pencapaian Bisnis'],
+  1283→    rows=[
+  1284→        ['Q1 2026', 'MVP release 25 bahasa, 30 tradisi, 12 modul', 'Onboarding 5 pemda pilot, kontrak 10 sekolah'],
+  1285→        ['Q2 2026', 'Tutor AI v2 dengan umpan balik pelafalan', 'Kontrak 5 pemda tambahan, 15 sekolah baru'],
+  1286→        ['Q3 2026', 'Mobile PWA offline mode penuh, analytics dashboard', 'Publikasi korpus riset v1, 5 universitas'],
+  1287→        ['Q4 2026', 'API publik untuk integrasi pemda, sertifikasi dasar', '10 pemda aktif, 50 sekolah aktif, Rp 500 juta'],
+  1288→    ],
+  1289→    col_ratios=[0.13, 0.45, 0.42],
+  1290→))
+  1291→story.append(Spacer(1, 8))
+  1292→
+  1293→story.extend(h2('17.2 Jangka Menengah (1-2 Tahun)'))
+  1294→story.append(para_nf(
+  1295→    'Pada jangka menengah, fokus bergeser ke integrasi mendalam dengan sistem pemerintah '
+  1296→    'daerah dan pengembangan aplikasi mobile native sebagai pelengkap PWA. Target spesifik '
+  1297→    'meliputi: integrasi resmi dengan 50 pemerintah daerah melalui API ke portal pemda '
+  1298→    'masing-masing, pengembangan aplikasi native Android dan iOS menggunakan React Native '
+  1299→    'dengan fokus pada pengalaman belajar offline, sertifikasi Kemendikbud untuk penggunaan '
+  1300→    'resmi sebagai materi muatan lokal, dan ekspansi korpus ke 40 bahasa daerah. Pendapatan '
+  1301→    'target tahun kedua adalah Rp 1,2 miliar dengan biaya operasional Rp 700 juta.'
+  1302→))
+  1303→
+  1304→story.extend(h2('17.3 Jangka Panjang (3-5 Tahun)'))
+  1305→story.append(para_nf(
+  1306→    'Pada jangka panjang, visi WARISAN SUARA adalah menjadi infrastruktur pelestarian bahasa '
+  1307→    'nasional yang diakui dan diadopsi secara luas. Target spesifik meliputi: dokumentasi '
+  1308→    '100+ bahasa daerah Indonesia (mencakup seluruh bahasa yang tercatat di Ethnologue), '
+  1309→    'sertifikasi resmi Kemendikbud sebagai materi ajar muatan lokal di seluruh Indonesia, '
+  1310→    'ekspansi ke ASEAN serumpun dengan dokumentasi bahasa Melayu regional, Tagalog, dan Cham, '
+  1311→    'serta kemitraan strategis dengan UNESCO sebagai alat dokumentasi bahasa terancam di '
+  1312→    'Asia-Pasifik. Pendapatan target tahun kelima adalah Rp 5 miliar dengan tim 15 orang '
+  1313→    'dan jaringan kontributor 1.000+ orang.'
+  1314→))
+  1315→story.append(std_table(
+  1316→    header=['Tahun', 'Target Produk', 'Target Bisnis', 'Target Dampak Budaya'],
+  1317→    rows=[
+  1318→        ['2026 (T1)', 'MVP 25 bahasa, mobile PWA', 'Rp 500 juta, 10 pemda, 50 sekolah', '25 bahasa terdokumentasi'],
+  1319→        ['2027 (T2)', 'Mobile native, 40 bahasa, API pemda', 'Rp 1,2 miliar, 50 pemda, 200 sekolah', '40 bahasa + sertifikasi Kemendikbud'],
+  1320→        ['2028 (T3)', '50 bahasa, integrasi 50 pemda aktif', 'Rp 2,5 miliar, ekspansi korpus riset', '50 bahasa + lisensi UNESCO pathway'],
+  1321→        ['2029 (T4)', '75 bahasa, ekspansi ASEAN dimulai', 'Rp 3,8 miliar, kemitraan regional ASEAN', '75 bahasa + 3 bahasa ASEAN serumpun'],
+  1322→        ['2030 (T5)', '100+ bahasa, infrastruktur nasional', 'Rp 5 miliar, 15 tim, 1.000+ kontributor', '100+ bahasa, kontribusi SDG 4 & 10'],
+  1323→    ],
+  1324→    col_ratios=[0.13, 0.30, 0.27, 0.30],
+  1325→))
+  1326→story.append(Paragraph('Tabel 17.1 — Roadmap 5 Tahun WARISAN SUARA (Produk, Bisnis, Dampak Budaya)', style_caption))
+  1327→
+  1328→story.append(PageBreak())
+  1329→
+  1330→# =========================================================================
+  1331→# Section 18: Lampiran Pendukung
+  1332→# =========================================================================
+  1333→story.extend(h1('18. Lampiran Pendukung'))
+  1334→story.extend(h2('18.1 Referensi dan Dasar Hukum'))
+  1335→story.append(para_nf(
+  1336→    'Daftar referensi berikut adalah landasan akademik, hukum, dan kebijakan yang menjadi '
+  1337→    'acuan dalam pengembangan WARISAN SUARA. Referensi dikutip dalam body proposal dengan '
+  1338→    'format [1], [2], dan seterusnya. Pembaca dapat menelusuri setiap klaim substantif di '
+  1339→    'body proposal kembali ke sumber primer pada daftar berikut.'
+  1340→))
+  1341→refs = [
+  1342→    '[1] Undang-Undang Republik Indonesia Nomor 5 Tahun 2017 tentang Pemajuan Kebudayaan. '
+  1343→    'Lembaran Negara RI Tahun 2017 No. 136. Jakarta: Sekretariat Negara.',
+  1344→    '[2] Kongres Kebudayaan Indonesia 2018. \u201cResolusi Kongres Kebudayaan 2018.\u201d '
+  1345→    'Jakarta: Komite Nasional Kebudayaan.',
+  1346→    '[3] Kongres Kebudayaan Indonesia 2023. \u201cAgenda Kebudayaan Nasional 2023-2033.\u201d '
+  1347→    'Jakarta: Komite Nasional Kebudayaan.',
+  1348→    '[4] UNESCO. 2010. <i>Atlas of the World\u2019s Languages in Danger</i> (edisi digital). '
+  1349→    'Paris: UNESCO Publishing.',
+  1350→    '[5] Moseley, Christopher (ed.). 2010. <i>Atlas of the World\u2019s Languages in Danger</i>. '
+  1351→    'Paris: UNESCO.',
+  1352→    '[6] Badan Pengembangan dan Pembinaan Bahasa. 2023. <i>Bahasa dan Sastra Indonesia dalam '
+  1353→    'Angka</i>. Jakarta: Kemendikbudristek.',
+  1354→    '[7] PBB. 2007. <i>United Nations Declaration on the Rights of Indigenous Peoples</i> '
+  1355→    '(UNDRIP). New York: United Nations.',
+  1356→    '[8] Cloudflare Inc. 2024. <i>Workers AI Documentation: Whisper ASR, Llama LLM, dan TTS</i>. '
+  1357→    'San Francisco: Cloudflare.',
+  1358→    '[9] OpenAI. 2022. \u201cWhisper: Robust Speech Recognition via Large-Scale Weak Supervision.\u201d '
+  1359→    'arXiv:2212.04356.',
+  1360→    '[10] Vercel. 2024. <i>Next.js 16 Documentation: App Router, Server Components, dan PWA</i>. '
+  1361→    'San Francisco: Vercel.',
+  1362→    '[11] Ethnologue. 2024. <i>Languages of the World: Indonesia Country Profile</i>. Dallas: '
+  1363→    'SIL International.',
+  1364→    '[12] UNESCO. 2003. <i>Convention for the Safeguarding of the Intangible Cultural Heritage</i>. '
+  1365→    'Paris: UNESCO.',
+  1366→]
+  1367→for r in refs:
+  1368→    story.append(Paragraph(r, style_ref))
+  1369→
+  1370→story.extend(h2('18.2 Foto dan Video Produk'))
+  1371→story.append(para_nf(
+  1372→    'Dokumentasi visual produk meliputi: (1) screenshot UI mobile PWA lima tab (Beranda, '
+  1373→    'Bahasa, Rekam, Belajar, Arsip) dengan tema earthy/batik, (2) video demo 3 menit yang '
+  1374→    'menunjukkan alur penggunaan dari pendaftaran hingga penyelesaian modul pembelajaran, '
+  1375→    '(3) foto dokumentasi lapangan tim bersama penutur asli di Cirebon, Gorontalo, dan Nias, '
+  1376→    '(4) infografik Peta Bahasa yang menampilkan distribusi 10 bahasa daerah pertama dengan '
+  1377→    'status UNESCO. Semua aset visual tersedia pada repository GitHub privat tim dan dapat '
+  1378→    'diberikan akses kepada juri BUDAYA GO! 2026 atas permintaan.'
+  1379→))
+  1380→
+  1381→story.extend(h2('18.3 Tautan Demo dan Akses'))
+  1382→story.append(std_table(
+  1383→    header=['Aset', 'Tautan / Akses', 'Keterangan'],
+  1384→    rows=[
+  1385→        ['Demo Live Platform', 'https://warisansuara.id (akan live saat fase final)', 'Akses publik purwarupa fungsional'],
+  1386→        ['Repository GitHub', 'github.com/warisansuara (privat)', 'Akses juri atas permintaan via email korespondensi'],
+  1387→        ['Video Demo', 'Tautan YouTube privat (3 menit)', 'Akses juri atas permintaan via email korespondensi'],
+  1388→        ['Dokumentasi Teknis', 'docs.warisansuara.id (subdomain)', 'Arsitektur, API, dan panduan integrasi'],
+  1389→        ['Email Korespondensi', 'warisansuara.id@gmail.com', 'Ketua: Febri Rizki, S.Si., M.Si.'],
+  1390→    ],
+  1391→    col_ratios=[0.25, 0.40, 0.35],
+  1392→))
+  1393→
+  1394→story.extend(h2('18.4 Penutup Lampiran'))
+  1395→story.append(para_nf(
+  1396→    'Seluruh data, klaim, dan angka yang disampaikan dalam proposal ini dapat diverifikasi '
+  1397→    'melalui sumber yang tertera pada daftar referensi atau melalui akses langsung ke platform '
+  1398→    'demo dan repository. Tim pengusul terbuka untuk sesi tanya jawab, demonstrasi langsung, '
+  1399→    'atau verifikasi data lapangan oleh panitia BUDAYA GO! 2026. Kami berkomitmen menjaga '
+  1400→    'transparansi akademik dan akuntabilitas sosial dalam setiap aspek pengembangan WARISAN '
+  1401→    'SUARA karena kami percaya bahwa pelestarian budaya hanya dapat berkelanjutan jika '
+  1402→    'dilakukan dengan integritas yang dapat diaudit publik. Atas perhatian dan kepercayaan '
+  1403→    'panitia BUDAYA GO! 2026, tim pengusul mengucapkan terima kasih.'
+  1404→))
+  1405→
+  1406→# ─────────────────────────────────────────────────────────────────────────
+  1407→# Build the body PDF
+  1408→# ─────────────────────────────────────────────────────────────────────────
+  1409→OUT_BODY = '/home/z/my-project/download/proposal-ws/body.pdf'
+  1410→
+  1411→doc = TocDocTemplate(
+  1412→    OUT_BODY,
+  1413→    pagesize=A4,
+  1414→    leftMargin=LEFT_MARGIN, rightMargin=RIGHT_MARGIN,
+  1415→    topMargin=TOP_MARGIN, bottomMargin=BOTTOM_MARGIN,
+  1416→    title='Proposal WARISAN SUARA - BUDAYA GO! 2026',
+  1417→    author='Febri Rizki, S.Si., M.Si.',
+  1418→    subject='Kompetisi Inovasi Budaya Indonesia',
+  1419→    creator='WARISAN SUARA Team',
+  1420→)
+  1421→doc.multiBuild(story, onFirstPage=header_footer, onLaterPages=header_footer)
+  1422→print(f'[ok] Body PDF generated: {OUT_BODY}')
+  1423→print(f'[ok] Total flowables: {len(story)}')
+  1424→

@@ -1,0 +1,919 @@
+     1→"use client";
+     2→
+     3→import { useEffect, useMemo, useState, useCallback } from "react";
+     4→import Link from "next/link";
+     5→import {
+     6→  MapPin,
+     7→  Users,
+     8→  AlertTriangle,
+     9→  BookOpen,
+    10→  Mic,
+    11→  ScrollText,
+    12→  Volume2,
+    13→  ChevronRight,
+    14→  Loader2,
+    15→  Languages,
+    16→  Inbox,
+    17→} from "lucide-react";
+    18→
+    19→import { cn } from "@/lib/utils";
+    20→import { Card } from "@/components/ui/card";
+    21→import { Button } from "@/components/ui/button";
+    22→import { Badge } from "@/components/ui/badge";
+    23→import { Skeleton } from "@/components/ui/skeleton";
+    24→import { ScrollArea } from "@/components/ui/scroll-area";
+    25→import {
+    26→  Dialog,
+    27→  DialogContent,
+    28→  DialogDescription,
+    29→  DialogFooter,
+    30→  DialogTitle,
+    31→} from "@/components/ui/dialog";
+    32→
+    33→/* ----------------------------------------------------------------------------
+    34→ * Types
+    35→ * ------------------------------------------------------------------------- */
+    36→
+    37→type Vitality = "AMAN" | "TERTENTU" | "TERANCAM" | "KRITIS" | "HAMPIR_PUNAH";
+    38→
+    39→interface LanguageCount {
+    40→  recordings: number;
+    41→  traditions: number;
+    42→  modules: number;
+    43→}
+    44→
+    45→interface Language {
+    46→  id: string;
+    47→  code: string;
+    48→  name: string;
+    49→  region: string;
+    50→  province: string;
+    51→  latitude: number | null;
+    52→  longitude: number | null;
+    53→  speakers: number;
+    54→  vitality: Vitality;
+    55→  isoCode: string | null;
+    56→  description: string;
+    57→  greetingText: string;
+    58→  samplePhrase: string;
+    59→  _count: LanguageCount;
+    60→}
+    61→
+    62→interface Tradition {
+    63→  id: string;
+    64→  type: string;
+    65→  title: string;
+    66→  text: string;
+    67→  translation: string;
+    68→  meaning: string | null;
+    69→  audioUrl: string | null;
+    70→  region: string | null;
+    71→  language: { code: string; name: string; region: string };
+    72→}
+    73→
+    74→/* ----------------------------------------------------------------------------
+    75→ * Vitality config — exact oklch values per spec
+    76→ * ------------------------------------------------------------------------- */
+    77→
+    78→interface VitalityStyle {
+    79→  label: string;            // Indonesian label
+    80→  short: string;            // English short
+    81→  dot: string;              // solid dot color (background of legend chip)
+    82→  badgeBg: string;          // badge background
+    83→  badgeBorder: string;      // badge border color
+    84→  badgeText: string;        // badge text color
+    85→  description: string;
+    86→}
+    87→
+    88→const VITALITY_CONFIG: Record<Vitality, VitalityStyle> = {
+    89→  AMAN: {
+    90→    label: "Aman",
+    91→    short: "Safe",
+    92→    dot: "oklch(0.6 0.13 145)",
+    93→    badgeBg: "oklch(0.95 0.04 145)",
+    94→    badgeBorder: "oklch(0.6 0.13 145)",
+    95→    badgeText: "oklch(0.32 0.09 145)",
+    96→    description: "Penutur banyak & diturunkan ke anak",
+    97→  },
+    98→  TERTENTU: {
+    99→    label: "Rentan",
+   100→    short: "Vulnerable",
+   101→    dot: "oklch(0.75 0.14 75)",
+   102→    badgeBg: "oklch(0.95 0.04 75)",
+   103→    badgeBorder: "oklch(0.75 0.14 75)",
+   104→    badgeText: "oklch(0.4 0.1 60)",
+   105→    description: "Sebagian anak tak lagi menggunakannya",
+   106→  },
+   107→  TERANCAM: {
+   108→    label: "Terancam",
+   109→    short: "Endangered",
+   110→    dot: "oklch(0.65 0.18 50)",
+   111→    badgeBg: "oklch(0.94 0.05 50)",
+   112→    badgeBorder: "oklch(0.65 0.18 50)",
+   113→    badgeText: "oklch(0.45 0.14 45)",
+   114→    description: "Anak-anak tidak lagi memakainya",
+   115→  },
+   116→  KRITIS: {
+   117→    label: "Kritis",
+   118→    short: "Severely Endangered",
+   119→    dot: "oklch(0.55 0.2 35)",
+   120→    badgeBg: "oklch(0.94 0.06 35)",
+   121→    badgeBorder: "oklch(0.55 0.2 35)",
+   122→    badgeText: "oklch(0.4 0.15 30)",
+   123→    description: "Hanya dituturkan oleh generasi tua",
+   124→  },
+   125→  HAMPIR_PUNAH: {
+   126→    label: "Hampir Punah",
+   127→    short: "Critically Endangered",
+   128→    dot: "oklch(0.45 0.2 25)",
+   129→    badgeBg: "oklch(0.93 0.07 25)",
+   130→    badgeBorder: "oklch(0.45 0.2 25)",
+   131→    badgeText: "oklch(0.35 0.16 25)",
+   132→    description: "Hanya beberapa tetua tersisa",
+   133→  },
+   134→};
+   135→
+   136→// Order used for legend + filter display
+   137→const VITALITY_ORDER: Vitality[] = [
+   138→  "AMAN",
+   139→  "TERTENTU",
+   140→  "TERANCAM",
+   141→  "KRITIS",
+   142→  "HAMPIR_PUNAH",
+   143→];
+   144→
+   145→/* ----------------------------------------------------------------------------
+   146→ * Filter options — All + every vitality status
+   147→ * ------------------------------------------------------------------------- */
+   148→
+   149→type FilterKey = "ALL" | Vitality;
+   150→
+   151→const FILTER_OPTIONS: { key: FilterKey; label: string }[] = [
+   152→  { key: "ALL", label: "Semua" },
+   153→  { key: "AMAN", label: "Aman" },
+   154→  { key: "TERTENTU", label: "Rentan" },
+   155→  { key: "TERANCAM", label: "Terancam" },
+   156→  { key: "KRITIS", label: "Kritis" },
+   157→  { key: "HAMPIR_PUNAH", label: "Hampir Punah" },
+   158→];
+   159→
+   160→/* ----------------------------------------------------------------------------
+   161→ * Helpers
+   162→ * ------------------------------------------------------------------------- */
+   163→
+   164→function formatSpeakers(n: number): string {
+   165→  if (n >= 1_000_000) {
+   166→    const m = n / 1_000_000;
+   167→    // 38M, 2.7M
+   168→    return `${m % 1 === 0 ? m.toFixed(0) : m.toFixed(1)}M`;
+   169→  }
+   170→  if (n >= 1_000) {
+   171→    const k = n / 1_000;
+   172→    return `${k % 1 === 0 ? k.toFixed(0) : k.toFixed(0)}K`;
+   173→  }
+   174→  return String(n);
+   175→}
+   176→
+   177→// Tradisi type label translation
+   178→const TRADITION_TYPE_LABEL: Record<string, string> = {
+   179→  pantun: "Pantun",
+   180→  mantra: "Mantra",
+   181→  nyanyian: "Nyanyian Rakyat",
+   182→  cerita_rakyat: "Cerita Rakyat",
+   183→  peribahasa: "Peribahasa",
+   184→};
+   185→
+   186→function traditionTypeLabel(type: string): string {
+   187→  return TRADITION_TYPE_LABEL[type] ?? type.charAt(0).toUpperCase() + type.slice(1);
+   188→}
+   189→
+   190→/* ----------------------------------------------------------------------------
+   191→ * Batik decorative band (subtle SVG pattern at section top)
+   192→ * ------------------------------------------------------------------------- */
+   193→
+   194→function BatikDivider() {
+   195→  return (
+   196→    <div
+   197→      aria-hidden="true"
+   198→      className="pointer-events-none absolute inset-x-0 top-0 h-1.5 overflow-hidden"
+   199→    >
+   200→      <svg
+   201→        className="h-full w-full"
+   202→        viewBox="0 0 120 6"
+   203→        preserveAspectRatio="repeat-x"
+   204→        xmlns="http://www.w3.org/2000/svg"
+   205→      >
+   206→        <defs>
+   207→          <linearGradient id="batik-band" x1="0" y1="0" x2="1" y2="0">
+   208→            <stop offset="0%" stopColor="oklch(0.52 0.16 45)" />
+   209→            <stop offset="50%" stopColor="oklch(0.7 0.12 75)" />
+   210→            <stop offset="100%" stopColor="oklch(0.5 0.18 25)" />
+   211→          </linearGradient>
+   212→        </defs>
+   213→        {/* kawung-inspired repeating circles */}
+   214→        <g fill="url(#batik-band)">
+   215→          {Array.from({ length: 20 }).map((_, i) => (
+   216→            <circle key={i} cx={i * 6 + 3} cy="3" r="2.4" opacity={0.85} />
+   217→          ))}
+   218→        </g>
+   219→      </svg>
+   220→    </div>
+   221→  );
+   222→}
+   223→
+   224→/* ----------------------------------------------------------------------------
+   225→ * Vitality badge component (inline style colors)
+   226→ * ------------------------------------------------------------------------- */
+   227→
+   228→function VitalityBadge({ vitality }: { vitality: Vitality }) {
+   229→  const cfg = VITALITY_CONFIG[vitality];
+   230→  return (
+   231→    <span
+   232→      className={cn(
+   233→        "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5",
+   234→        "text-xs font-semibold whitespace-nowrap"
+   235→      )}
+   236→      style={{
+   237→        backgroundColor: cfg.badgeBg,
+   238→        borderColor: cfg.badgeBorder,
+   239→        color: cfg.badgeText,
+   240→      }}
+   241→    >
+   242→      <span
+   243→        className="h-2 w-2 rounded-full"
+   244→        style={{ backgroundColor: cfg.dot }}
+   245→        aria-hidden="true"
+   246→      />
+   247→      {cfg.label}
+   248→    </span>
+   249→  );
+   250→}
+   251→
+   252→/* ----------------------------------------------------------------------------
+   253→ * Vitality legend
+   254→ * ------------------------------------------------------------------------- */
+   255→
+   256→function VitalityLegend() {
+   257→  return (
+   258→    <div className="flex flex-wrap items-center gap-2">
+   259→      <span className="text-xs font-medium text-muted-foreground mr-1">
+   260→        Skala vitalitas:
+   261→      </span>
+   262→      {VITALITY_ORDER.map((v) => {
+   263→        const cfg = VITALITY_CONFIG[v];
+   264→        return (
+   265→          <span
+   266→            key={v}
+   267→            className="inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-[11px] font-medium"
+   268→            style={{
+   269→              backgroundColor: cfg.badgeBg,
+   270→              borderColor: cfg.badgeBorder,
+   271→              color: cfg.badgeText,
+   272→            }}
+   273→          >
+   274→            <span
+   275→              className="h-2.5 w-2.5 rounded-full"
+   276→              style={{ backgroundColor: cfg.dot }}
+   277→              aria-hidden="true"
+   278→            />
+   279→            {cfg.label}
+   280→            <span className="opacity-70 hidden sm:inline">· {cfg.short}</span>
+   281→          </span>
+   282→        );
+   283→      })}
+   284→    </div>
+   285→  );
+   286→}
+   287→
+   288→/* ----------------------------------------------------------------------------
+   289→ * Stats summary card row
+   290→ * ------------------------------------------------------------------------- */
+   291→
+   292→function StatPill({
+   293→  icon,
+   294→  label,
+   295→  value,
+   296→  accent,
+   297→}: {
+   298→  icon: React.ReactNode;
+   299→  label: string;
+   300→  value: string;
+   301→  accent: "primary" | "accent" | "destructive";
+   302→}) {
+   303→  const accentClass = {
+   304→    primary: "text-primary",
+   305→    accent: "text-accent-foreground",
+   306→    destructive: "text-destructive",
+   307→  }[accent];
+   308→
+   309→  return (
+   310→    <div className="rounded-lg border border-border bg-card/60 backdrop-blur-sm px-4 py-3 flex items-center gap-3">
+   311→      <div
+   312→        className={cn(
+   313→          "flex h-9 w-9 shrink-0 items-center justify-center rounded-md",
+   314→          accent === "primary" && "bg-primary/10",
+   315→          accent === "accent" && "bg-accent/30",
+   316→          accent === "destructive" && "bg-destructive/10"
+   317→        )}
+   318→      >
+   319→        {icon}
+   320→      </div>
+   321→      <div className="min-w-0">
+   322→        <div className={cn("text-xl font-bold leading-tight", accentClass)}>
+   323→          {value}
+   324→        </div>
+   325→        <div className="text-[11px] text-muted-foreground leading-tight truncate">
+   326→          {label}
+   327→        </div>
+   328→      </div>
+   329→    </div>
+   330→  );
+   331→}
+   332→
+   333→/* ----------------------------------------------------------------------------
+   334→ * Loading skeleton for a language card
+   335→ * ------------------------------------------------------------------------- */
+   336→
+   337→function LanguageCardSkeleton() {
+   338→  return (
+   339→    <Card className="p-5 gap-4">
+   340→      <div className="flex items-start justify-between gap-3">
+   341→        <div className="space-y-2">
+   342→          <Skeleton className="h-5 w-32" />
+   343→          <Skeleton className="h-3.5 w-24" />
+   344→        </div>
+   345→        <Skeleton className="h-6 w-20 rounded-full" />
+   346→      </div>
+   347→      <Skeleton className="h-4 w-20" />
+   348→      <div className="space-y-2 pt-1">
+   349→        <Skeleton className="h-4 w-40" />
+   350→        <Skeleton className="h-3.5 w-28" />
+   351→      </div>
+   352→      <div className="flex gap-3 pt-2 border-t border-border">
+   353→        <Skeleton className="h-3.5 w-16" />
+   354→        <Skeleton className="h-3.5 w-16" />
+   355→        <Skeleton className="h-3.5 w-16" />
+   356→      </div>
+   357→    </Card>
+   358→  );
+   359→}
+   360→
+   361→/* ----------------------------------------------------------------------------
+   362→ * Empty state
+   363→ * ------------------------------------------------------------------------- */
+   364→
+   365→function EmptyState() {
+   366→  return (
+   367→    <div className="rounded-xl border border-dashed border-border bg-card/40 px-6 py-16 text-center">
+   368→      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-muted">
+   369→        <Inbox className="h-7 w-7 text-muted-foreground" />
+   370→      </div>
+   371→      <h3 className="mt-4 text-lg font-semibold text-foreground">
+   372→        Belum ada bahasa pada filter ini
+   373→      </h3>
+   374→      <p className="mt-1 text-sm text-muted-foreground max-w-md mx-auto">
+   375→        Coba ubah filter vitalitas atau muat ulang halaman. Data bahasa daerah
+   376→        ditambahkan seiring dokumentasi tim Warisan Suara.
+   377→      </p>
+   378→    </div>
+   379→  );
+   380→}
+   381→
+   382→/* ----------------------------------------------------------------------------
+   383→ * Language card
+   384→ * ------------------------------------------------------------------------- */
+   385→
+   386→function LanguageCard({
+   387→  language,
+   388→  onOpen,
+   389→}: {
+   390→  language: Language;
+   391→  onOpen: (lang: Language) => void;
+   392→}) {
+   393→  return (
+   394→    <Card
+   395→      role="button"
+   396→      tabIndex={0}
+   397→      aria-label={`Buka detail ${language.name}`}
+   398→      onClick={() => onOpen(language)}
+   399→      onKeyDown={(e) => {
+   400→        if (e.key === "Enter" || e.key === " ") {
+   401→          e.preventDefault();
+   402→          onOpen(language);
+   403→        }
+   404→      }}
+   405→      className={cn(
+   406→        "group relative cursor-pointer p-5 gap-4 transition-all duration-200",
+   407→        "hover:-translate-y-1 hover:shadow-lg hover:border-primary/40",
+   408→        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+   409→        "border-border"
+   410→      )}
+   411→    >
+   412→      {/* Top: name + vitality */}
+   413→      <div className="flex items-start justify-between gap-3">
+   414→        <div className="min-w-0 space-y-1">
+   415→          <h3 className="text-lg font-bold text-foreground leading-tight truncate">
+   416→            {language.name}
+   417→          </h3>
+   418→          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+   419→            <MapPin className="h-3 w-3 shrink-0 text-primary/70" />
+   420→            <span className="truncate">
+   421→              {language.region} · {language.province}
+   422→            </span>
+   423→          </div>
+   424→        </div>
+   425→        <VitalityBadge vitality={language.vitality} />
+   426→      </div>
+   427→
+   428→      {/* Speakers */}
+   429→      <div className="flex items-center gap-1.5 text-sm">
+   430→        <Users className="h-3.5 w-3.5 text-primary/70" />
+   431→        <span className="font-semibold text-foreground">
+   432→          {formatSpeakers(language.speakers)}
+   433→        </span>
+   434→        <span className="text-xs text-muted-foreground">penutur</span>
+   435→      </div>
+   436→
+   437→      {/* Greeting + sample phrase */}
+   438→      <div className="space-y-2 rounded-lg bg-secondary/40 px-3 py-3 border border-border/60">
+   439→        <div className="flex items-start gap-2">
+   440→          <Volume2 className="h-3.5 w-3.5 shrink-0 text-primary mt-0.5" />
+   441→          <div className="min-w-0">
+   442→            <p className="text-sm italic font-medium text-foreground leading-snug">
+   443→              &ldquo;{language.greetingText}&rdquo;
+   444→            </p>
+   445→            <p className="text-[11px] text-muted-foreground mt-0.5">
+   446→              Sapaan khas
+   447→            </p>
+   448→          </div>
+   449→        </div>
+   450→        <div className="flex items-start gap-2 pt-1.5 border-t border-border/40">
+   451→          <Languages className="h-3.5 w-3.5 shrink-0 text-accent-foreground mt-0.5" />
+   452→          <div className="min-w-0">
+   453→            <p className="text-sm text-foreground leading-snug">
+   454→              {language.samplePhrase}
+   455→            </p>
+   456→            <p className="text-[11px] text-muted-foreground mt-0.5">
+   457→              Frasa contoh
+   458→            </p>
+   459→          </div>
+   460→        </div>
+   461→      </div>
+   462→
+   463→      {/* Footer counts */}
+   464→      <div className="flex items-center justify-between gap-2 pt-1 border-t border-border">
+   465→        <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+   466→          <span className="inline-flex items-center gap-1">
+   467→            <Mic className="h-3 w-3" />
+   468→            {language._count.recordings} rekaman
+   469→          </span>
+   470→          <span className="inline-flex items-center gap-1">
+   471→            <ScrollText className="h-3 w-3" />
+   472→            {language._count.traditions} tradisi
+   473→          </span>
+   474→          <span className="inline-flex items-center gap-1">
+   475→            <BookOpen className="h-3 w-3" />
+   476→            {language._count.modules} modul
+   477→          </span>
+   478→        </div>
+   479→        <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-primary" />
+   480→      </div>
+   481→    </Card>
+   482→  );
+   483→}
+   484→
+   485→/* ----------------------------------------------------------------------------
+   486→ * Detail dialog
+   487→ * ------------------------------------------------------------------------- */
+   488→
+   489→function LanguageDetailDialog({
+   490→  language,
+   491→  open,
+   492→  onOpenChange,
+   493→  traditions,
+   494→  loadingTraditions,
+   495→  traditionsError,
+   496→}: {
+   497→  language: Language | null;
+   498→  open: boolean;
+   499→  onOpenChange: (open: boolean) => void;
+   500→  traditions: Tradition[];
+   501→  loadingTraditions: boolean;
+   502→  traditionsError: string | null;
+   503→}) {
+   504→  if (!language) return null;
+   505→  const cfg = VITALITY_CONFIG[language.vitality];
+   506→
+   507→  return (
+   508→    <Dialog open={open} onOpenChange={onOpenChange}>
+   509→      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-hidden flex flex-col gap-0 p-0">
+   510→        {/* Header band with vitality color */}
+   511→        <div
+   512→          className="px-6 pt-6 pb-4 border-b border-border"
+   513→          style={{ backgroundColor: cfg.badgeBg }}
+   514→        >
+   515→          <div className="flex items-start justify-between gap-3">
+   516→            <div className="min-w-0">
+   517→              <div className="flex items-center gap-2 mb-1">
+   518→                <VitalityBadge vitality={language.vitality} />
+   519→                {language.isoCode && (
+   520→                  <Badge variant="outline" className="text-[10px] font-mono">
+   521→                    ISO {language.isoCode}
+   522→                  </Badge>
+   523→                )}
+   524→              </div>
+   525→              <DialogTitle className="text-2xl font-bold text-foreground">
+   526→                {language.name}
+   527→              </DialogTitle>
+   528→              <DialogDescription className="flex items-center gap-1 mt-1 text-sm">
+   529→                <MapPin className="h-3.5 w-3.5" />
+   530→                {language.region} · {language.province}
+   531→              </DialogDescription>
+   532→            </div>
+   533→          </div>
+   534→        </div>
+   535→
+   536→        <ScrollArea className="flex-1 overflow-y-auto max-h-[60vh]">
+   537→          <div className="px-6 py-5 space-y-5">
+   538→            {/* Description */}
+   539→            <section className="space-y-2">
+   540→              <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+   541→                Tentang Bahasa
+   542→              </h4>
+   543→              <p className="text-sm text-foreground leading-relaxed">
+   544→                {language.description}
+   545→              </p>
+   546→            </section>
+   547→
+   548→            {/* Quick facts */}
+   549→            <section className="grid grid-cols-2 gap-3">
+   550→              <div className="rounded-lg border border-border bg-secondary/30 px-3 py-2.5">
+   551→                <div className="text-[11px] text-muted-foreground">Penutur</div>
+   552→                <div className="text-base font-bold text-foreground">
+   553→                  {formatSpeakers(language.speakers)}
+   554→                </div>
+   555→              </div>
+   556→              <div className="rounded-lg border border-border bg-secondary/30 px-3 py-2.5">
+   557→                <div className="text-[11px] text-muted-foreground">
+   558→                  Status Vitalitas
+   559→                </div>
+   560→                <div className="text-base font-semibold" style={{ color: cfg.badgeText }}>
+   561→                  {cfg.label} · {cfg.short}
+   562→                </div>
+   563→              </div>
+   564→            </section>
+   565→
+   566→            {/* Greeting + sample phrase */}
+   567→            <section className="space-y-3">
+   568→              <div className="rounded-lg border border-primary/20 bg-primary/5 px-4 py-3">
+   569→                <div className="text-[11px] font-medium text-muted-foreground mb-1">
+   570→                  Sapaan Khas
+   571→                </div>
+   572→                <p className="text-lg italic font-semibold text-foreground">
+   573→                  &ldquo;{language.greetingText}&rdquo;
+   574→                </p>
+   575→              </div>
+   576→              <div className="rounded-lg border border-accent/30 bg-accent/10 px-4 py-3">
+   577→                <div className="text-[11px] font-medium text-muted-foreground mb-1">
+   578→                  Frasa Contoh
+   579→                </div>
+   580→                <p className="text-base text-foreground">
+   581→                  {language.samplePhrase}
+   582→                </p>
+   583→              </div>
+   584→            </section>
+   585→
+   586→            {/* Traditions */}
+   587→            <section className="space-y-3">
+   588→              <div className="flex items-center justify-between">
+   589→                <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+   590→                  Tradisi Lisan Terdokumentasi
+   591→                </h4>
+   592→                {loadingTraditions ? (
+   593→                  <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
+   594→                ) : (
+   595→                  <span className="text-[11px] text-muted-foreground">
+   596→                    {traditions.length} tradisi
+   597→                  </span>
+   598→                )}
+   599→              </div>
+   600→
+   601→              {loadingTraditions ? (
+   602→                <div className="space-y-2">
+   603→                  {Array.from({ length: 3 }).map((_, i) => (
+   604→                    <Skeleton key={i} className="h-20 w-full" />
+   605→                  ))}
+   606→                </div>
+   607→              ) : traditionsError ? (
+   608→                <div className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-xs text-destructive">
+   609→                  {traditionsError}
+   610→                </div>
+   611→              ) : traditions.length === 0 ? (
+   612→                <div className="rounded-md border border-dashed border-border px-3 py-4 text-center text-xs text-muted-foreground">
+   613→                  Belum ada tradisi lisan terdokumentasi untuk bahasa ini.
+   614→                </div>
+   615→              ) : (
+   616→                <div className="max-h-96 overflow-y-auto pr-1 space-y-2 -mr-1">
+   617→                  {traditions.map((t) => (
+   618→                    <article
+   619→                      key={t.id}
+   620→                      className="rounded-lg border border-border bg-card px-3 py-2.5"
+   621→                    >
+   622→                      <div className="flex items-center justify-between gap-2 mb-1">
+   623→                        <h5 className="text-sm font-semibold text-foreground truncate">
+   624→                          {t.title}
+   625→                        </h5>
+   626→                        <Badge
+   627→                          variant="secondary"
+   628→                          className="shrink-0 text-[10px] bg-accent/30 border-accent/40"
+   629→                        >
+   630→                          {traditionTypeLabel(t.type)}
+   631→                        </Badge>
+   632→                      </div>
+   633→                      <p className="text-sm italic text-foreground leading-snug">
+   634→                        &ldquo;{t.text}&rdquo;
+   635→                      </p>
+   636→                      <p className="text-xs text-muted-foreground mt-1">
+   637→                        {t.translation}
+   638→                      </p>
+   639→                      {t.meaning && (
+   640→                        <p className="text-[11px] text-muted-foreground mt-1 italic">
+   641→                          Makna: {t.meaning}
+   642→                        </p>
+   643→                      )}
+   644→                    </article>
+   645→                  ))}
+   646→                </div>
+   647→              )}
+   648→            </section>
+   649→          </div>
+   650→        </ScrollArea>
+   651→
+   652→        {/* Footer */}
+   653→        <DialogFooter className="px-6 py-4 border-t border-border bg-secondary/20">
+   654→          <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90">
+   655→            <Link href="#belajar" onClick={() => onOpenChange(false)}>
+   656→              <BookOpen className="h-4 w-4" />
+   657→              Mulai Belajar
+   658→            </Link>
+   659→          </Button>
+   660→        </DialogFooter>
+   661→      </DialogContent>
+   662→    </Dialog>
+   663→  );
+   664→}
+   665→
+   666→/* ----------------------------------------------------------------------------
+   667→ * Main section component
+   668→ * ------------------------------------------------------------------------- */
+   669→
+   670→export function LanguageMapSection() {
+   671→  const [languages, setLanguages] = useState<Language[]>([]);
+   672→  const [loading, setLoading] = useState(true);
+   673→  const [error, setError] = useState<string | null>(null);
+   674→  const [filter, setFilter] = useState<FilterKey>("ALL");
+   675→  const [selected, setSelected] = useState<Language | null>(null);
+   676→  const [dialogOpen, setDialogOpen] = useState(false);
+   677→  const [traditions, setTraditions] = useState<Tradition[]>([]);
+   678→  const [loadingTraditions, setLoadingTraditions] = useState(false);
+   679→  const [traditionsError, setTraditionsError] = useState<string | null>(null);
+   680→  // Bumping this nonce re-triggers the languages fetch (e.g. on retry).
+   681→  const [fetchNonce, setFetchNonce] = useState(0);
+   682→
+   683→  // Fetch languages whenever the nonce changes.
+   684→  // setState calls happen only inside async callbacks to avoid cascading
+   685→  // renders (react-hooks/set-state-in-effect). Initial loading=true covers
+   686→  // the first render before data arrives.
+   687→  useEffect(() => {
+   688→    const controller = new AbortController();
+   689→    fetch("/api/languages", { signal: controller.signal })
+   690→      .then((r) => {
+   691→        if (!r.ok) throw new Error("Gagal memuat daftar bahasa");
+   692→        return r.json();
+   693→      })
+   694→      .then((data: { languages: Language[] }) => {
+   695→        setLanguages(data.languages ?? []);
+   696→        setError(null);
+   697→        setLoading(false);
+   698→      })
+   699→      .catch((err) => {
+   700→        if (controller.signal.aborted) return;
+   701→        setError(err?.message ?? "Gagal memuat daftar bahasa");
+   702→        setLoading(false);
+   703→      });
+   704→    return () => controller.abort();
+   705→  }, [fetchNonce]);
+   706→
+   707→  // Open a language detail dialog and start fetching its traditions.
+   708→  // Runs in an event-handler context, so synchronous setState is allowed.
+   709→  const handleOpen = useCallback((lang: Language) => {
+   710→    setSelected(lang);
+   711→    setDialogOpen(true);
+   712→    setTraditions([]);
+   713→    setTraditionsError(null);
+   714→    setLoadingTraditions(true);
+   715→    fetch(`/api/traditions?languageCode=${encodeURIComponent(lang.code)}`)
+   716→      .then((r) => {
+   717→        if (!r.ok) throw new Error("Gagal memuat tradisi");
+   718→        return r.json();
+   719→      })
+   720→      .then((data: { traditions: Tradition[] }) => {
+   721→        setTraditions(data.traditions ?? []);
+   722→        setLoadingTraditions(false);
+   723→      })
+   724→      .catch((err) => {
+   725→        setTraditionsError(err?.message ?? "Gagal memuat tradisi");
+   726→        setLoadingTraditions(false);
+   727→      });
+   728→  }, []);
+   729→
+   730→  // Derived stats
+   731→  const stats = useMemo(() => {
+   732→    const totalSpeakers = languages.reduce((sum, l) => sum + l.speakers, 0);
+   733→    const endangeredCount = languages.filter(
+   734→      (l) =>
+   735→        l.vitality === "TERANCAM" ||
+   736→        l.vitality === "KRITIS" ||
+   737→        l.vitality === "HAMPIR_PUNAH"
+   738→    ).length;
+   739→    return {
+   740→      total: languages.length,
+   741→      totalSpeakers,
+   742→      endangered: endangeredCount,
+   743→    };
+   744→  }, [languages]);
+   745→
+   746→  // Filtered languages
+   747→  const filtered = useMemo(() => {
+   748→    if (filter === "ALL") return languages;
+   749→    return languages.filter((l) => l.vitality === filter);
+   750→  }, [languages, filter]);
+   751→
+   752→  return (
+   753→    <section
+   754→      id="peta-bahasa"
+   755→      className="relative py-16 sm:py-20 border-b border-border overflow-hidden"
+   756→    >
+   757→      {/* Decorative batik band at top */}
+   758→      <BatikDivider />
+   759→
+   760→      {/* Soft background glow */}
+   761→      <div
+   762→        aria-hidden="true"
+   763→        className="pointer-events-none absolute inset-0 overflow-hidden"
+   764→      >
+   765→        <div className="absolute -top-20 left-1/4 h-72 w-72 rounded-full bg-primary/5 blur-3xl" />
+   766→        <div className="absolute top-32 -right-24 h-80 w-80 rounded-full bg-accent/10 blur-3xl" />
+   767→        <div className="absolute bottom-0 left-1/3 h-64 w-64 rounded-full bg-destructive/5 blur-3xl" />
+   768→      </div>
+   769→
+   770→      <div className="relative container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+   771→        {/* Header */}
+   772→        <div className="max-w-3xl space-y-3">
+   773→          <div className="inline-flex items-center gap-2">
+   774→            <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+   775→              <MapPin className="h-3.5 w-3.5" />
+   776→              Peta Bahasa
+   777→            </span>
+   778→            {!loading && (
+   779→              <Badge variant="secondary" className="bg-accent/30 border-accent/40">
+   780→                {stats.total} bahasa terdata
+   781→              </Badge>
+   782→            )}
+   783→          </div>
+   784→
+   785→          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
+   786→            Peta Bahasa Daerah Nusantara
+   787→          </h2>
+   788→          <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+   789→            Jelajahi khazanah bahasa daerah Indonesia berdasarkan status
+   790→            vitalitasnya. Taksonomi mengacu pada kerangka{" "}
+   791→            <span className="font-medium text-foreground">UNESCO Atlas of the World&apos;s Languages in Danger</span>{" "}
+   792→            — dari <span className="font-medium text-foreground">Aman</span> hingga{" "}
+   793→            <span className="font-medium text-destructive">Hampir Punah</span>.
+   794→            Setiap bahasa menyimpan sapaan, frasa, dan tradisi lisan yang
+   795→            menunggu untuk didengar dan dipelajari.
+   796→          </p>
+   797→        </div>
+   798→
+   799→        {/* Stats summary */}
+   800→        {!loading && !error && languages.length > 0 && (
+   801→          <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-3">
+   802→            <StatPill
+   803→              icon={<Languages className="h-4 w-4 text-primary" />}
+   804→              label="Total Bahasa Terdokumentasi"
+   805→              value={String(stats.total)}
+   806→              accent="primary"
+   807→            />
+   808→            <StatPill
+   809→              icon={<Users className="h-4 w-4 text-primary" />}
+   810→              label="Total Penutur Tercakup"
+   811→              value={formatSpeakers(stats.totalSpeakers)}
+   812→              accent="primary"
+   813→            />
+   814→            <StatPill
+   815→              icon={<AlertTriangle className="h-4 w-4 text-destructive" />}
+   816→              label="Bahasa dalam Status Terancam+"
+   817→              value={String(stats.endangered)}
+   818→              accent="destructive"
+   819→            />
+   820→          </div>
+   821→        )}
+   822→
+   823→        {/* Vitality legend */}
+   824→        {!loading && !error && languages.length > 0 && (
+   825→          <div className="mt-8">
+   826→            <VitalityLegend />
+   827→          </div>
+   828→        )}
+   829→
+   830→        {/* Filter bar */}
+   831→        {!loading && !error && languages.length > 0 && (
+   832→          <div className="mt-6 flex flex-wrap items-center gap-2">
+   833→            <span className="text-xs text-muted-foreground mr-1">Filter:</span>
+   834→            {FILTER_OPTIONS.map((opt) => {
+   835→              const active = filter === opt.key;
+   836→              return (
+   837→                <Button
+   838→                  key={opt.key}
+   839→                  size="sm"
+   840→                  variant={active ? "default" : "outline"}
+   841→                  onClick={() => setFilter(opt.key)}
+   842→                  className={cn(
+   843→                    "h-8 rounded-full px-3.5 text-xs font-medium transition-all",
+   844→                    active
+   845→                      ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
+   846→                      : "border-border text-muted-foreground hover:text-foreground hover:bg-accent/30"
+   847→                  )}
+   848→                >
+   849→                  {opt.label}
+   850→                </Button>
+   851→              );
+   852→            })}
+   853→            <span className="ml-auto text-xs text-muted-foreground hidden sm:inline">
+   854→              Menampilkan {filtered.length} dari {languages.length}
+   855→            </span>
+   856→          </div>
+   857→        )}
+   858→
+   859→        {/* Content: loading / error / empty / grid */}
+   860→        <div className="mt-8">
+   861→          {loading ? (
+   862→            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+   863→              {Array.from({ length: 6 }).map((_, i) => (
+   864→                <LanguageCardSkeleton key={i} />
+   865→              ))}
+   866→            </div>
+   867→          ) : error ? (
+   868→            <div className="rounded-xl border border-destructive/30 bg-destructive/5 px-6 py-12 text-center">
+   869→              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
+   870→                <AlertTriangle className="h-6 w-6 text-destructive" />
+   871→              </div>
+   872→              <h3 className="mt-3 text-base font-semibold text-foreground">
+   873→                Gagal memuat data bahasa
+   874→              </h3>
+   875→              <p className="mt-1 text-sm text-muted-foreground max-w-md mx-auto">
+   876→                {error}
+   877→              </p>
+   878→              <Button
+   879→                variant="outline"
+   880→                size="sm"
+   881→                className="mt-4"
+   882→                onClick={() => {
+   883→                  setLoading(true);
+   884→                  setError(null);
+   885→                  setFetchNonce((n) => n + 1);
+   886→                }}
+   887→              >
+   888→                Coba lagi
+   889→              </Button>
+   890→            </div>
+   891→          ) : filtered.length === 0 ? (
+   892→            <EmptyState />
+   893→          ) : (
+   894→            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+   895→              {filtered.map((lang) => (
+   896→                <LanguageCard
+   897→                  key={lang.id}
+   898→                  language={lang}
+   899→                  onOpen={handleOpen}
+   900→                />
+   901→              ))}
+   902→            </div>
+   903→          )}
+   904→        </div>
+   905→      </div>
+   906→
+   907→      {/* Detail dialog */}
+   908→      <LanguageDetailDialog
+   909→        language={selected}
+   910→        open={dialogOpen}
+   911→        onOpenChange={setDialogOpen}
+   912→        traditions={traditions}
+   913→        loadingTraditions={loadingTraditions}
+   914→        traditionsError={traditionsError}
+   915→      />
+   916→    </section>
+   917→  );
+   918→}
+   919→

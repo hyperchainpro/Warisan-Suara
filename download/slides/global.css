@@ -1,0 +1,162 @@
+/* WARISAN SUARA · BUDAYA GO! 2026 — Earthy Batik Palette */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800;900&family=Manrope:wght@300;400;500;600;700;800&family=Cormorant+Garamond:wght@500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons|Material+Icons+Outlined');
+
+:root {
+  /* ===== PALETTE — earthy batik, NO blue/indigo ===== */
+  --bg:           #fdf8ef;   /* cream */
+  --bg-soft:      #f5ecd9;   /* cream-dark surface */
+  --bg-deep:      #efe2c6;   /* deeper cream */
+  --primary:      #7a3a28;   /* maroon */
+  --accent:       #c89545;   /* gold */
+  --terracotta:   #a85c32;   /* terracotta */
+  --ink:          #2c1810;   /* deep brown body */
+  --ink-soft:     #5b4332;   /* secondary brown */
+  --muted:        #8b6f47;   /* muted brown */
+  --line:         #d9c4a3;   /* hairline gold-brown */
+  --maroon-soft:  #9a5540;
+  --gold-light:   #e0b56a;
+  --gold-deep:    #a8762a;
+
+  /* ===== TYPOGRAPHY TOKENS ===== */
+  --font-heading: "Playfair Display", Georgia, serif;
+  --font-body:    "Manrope", system-ui, -apple-system, sans-serif;
+  --font-num:     "Manrope", system-ui, sans-serif;
+  --font-alt:     "Cormorant Garamond", Georgia, serif;
+
+  --fs-display: 68px;
+  --fs-h1:      44px;
+  --fs-h2:      32px;
+  --fs-h3:      22px;
+  --fs-body:    16px;
+  --fs-small:   13px;
+  --fs-micro:   11px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  font-family: var(--font-body);
+  color: var(--ink);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ===== SLIDE CANVAS — 1280 x 720 ===== */
+.slide {
+  width: 1280px;
+  height: 720px;
+  background: var(--bg);
+  position: relative;
+  overflow: hidden;
+  padding: 0;
+}
+
+/* ===== HEADINGS ===== */
+.h-display { font-family: var(--font-heading); font-weight: 900; font-size: var(--fs-display); line-height: 1.05; color: var(--primary); letter-spacing: -0.5px; }
+.h-h1      { font-family: var(--font-heading); font-weight: 800; font-size: var(--fs-h1);      line-height: 1.12; color: var(--primary); letter-spacing: -0.3px; }
+.h-h2      { font-family: var(--font-heading); font-weight: 700; font-size: var(--fs-h2);      line-height: 1.18; color: var(--primary); }
+.h-h3      { font-family: var(--font-body);    font-weight: 700; font-size: var(--fs-h3);      line-height: 1.25; color: var(--ink); letter-spacing: 0.1px; }
+.t-body    { font-family: var(--font-body);    font-weight: 400; font-size: var(--fs-body);    line-height: 1.55; color: var(--ink-soft); }
+.t-small   { font-family: var(--font-body);    font-weight: 500; font-size: var(--fs-small);   line-height: 1.45; color: var(--muted); letter-spacing: 0.4px; text-transform: uppercase; }
+.t-micro   { font-family: var(--font-body);    font-weight: 600; font-size: var(--fs-micro);   line-height: 1.4;  color: var(--muted); letter-spacing: 0.6px; text-transform: uppercase; }
+.t-num     { font-family: var(--font-num);     font-weight: 800; font-variant-numeric: tabular-nums; color: var(--terracotta); }
+
+/* ===== ACCENT UTILITIES ===== */
+.accent-bar { width: 56px; height: 4px; background: var(--accent); border-radius: 2px; }
+.dot        { width: 6px;  height: 6px; background: var(--accent); border-radius: 50%; display: inline-block; }
+.kicker     { font-family: var(--font-body); font-weight: 700; font-size: 12px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--terracotta); }
+.gold-text  { color: var(--accent); }
+.ink-text   { color: var(--ink); }
+.primary-text { color: var(--primary); }
+.terra-text { color: var(--terracotta); }
+
+/* ===== SURFACES ===== */
+.surface     { background: var(--bg-soft); border-radius: 14px; }
+.surface-d   { background: var(--bg-deep); border-radius: 14px; }
+.surface-dk  { background: var(--primary); color: var(--bg); border-radius: 14px; }
+.surface-t   { background: var(--terracotta); color: var(--bg); border-radius: 14px; }
+.surface-g   { background: var(--accent); color: var(--primary); border-radius: 14px; }
+.card        { background: #fffdf6; border: 1px solid var(--line); border-radius: 14px; padding: 22px; }
+.card-maroon { background: var(--primary); color: var(--bg); border-radius: 14px; padding: 22px; }
+.card-terra  { background: var(--terracotta); color: var(--bg); border-radius: 14px; padding: 22px; }
+.card-gold   { background: var(--accent); color: var(--primary); border-radius: 14px; padding: 22px; }
+
+/* ===== ICONS ===== */
+.material-icons, .material-icons-outlined { vertical-align: middle; }
+.icon-circle {
+  width: 48px; height: 48px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--bg-deep); color: var(--primary);
+}
+.icon-square {
+  width: 44px; height: 44px; border-radius: 10px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--accent); color: var(--primary);
+}
+
+/* ===== SOUNDWAVE / BATIK MOTIFS (pure CSS/SVG background) ===== */
+.batik-bg {
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(circle at 12% 22%, rgba(168, 92, 50, 0.06) 0, transparent 14%),
+    radial-gradient(circle at 88% 78%, rgba(122, 58, 40, 0.06) 0, transparent 16%),
+    repeating-linear-gradient(45deg, transparent 0 22px, rgba(200, 149, 69, 0.035) 22px 23px),
+    repeating-linear-gradient(-45deg, transparent 0 22px, rgba(122, 58, 40, 0.03) 22px 23px);
+}
+
+.batik-corner {
+  position: absolute; width: 240px; height: 240px; pointer-events: none;
+  background:
+    radial-gradient(circle at 0% 100%, rgba(200, 149, 69, 0.22) 0, transparent 70%),
+    repeating-conic-gradient(from 225deg at 0% 100%, rgba(122, 58, 40, 0.18) 0 6deg, transparent 6deg 18deg);
+}
+
+/* Soundwave bars — used as decorative motif */
+.soundwave {
+  display: inline-flex; align-items: flex-end; gap: 4px; height: 28px;
+}
+.soundwave .bar {
+  width: 4px; background: var(--accent); border-radius: 2px;
+  animation: none;
+}
+.soundwave .bar:nth-child(1) { height: 30%; }
+.soundwave .bar:nth-child(2) { height: 65%; }
+.soundwave .bar:nth-child(3) { height: 95%; }
+.soundwave .bar:nth-child(4) { height: 50%; }
+.soundwave .bar:nth-child(5) { height: 80%; }
+.soundwave .bar:nth-child(6) { height: 40%; }
+.soundwave .bar:nth-child(7) { height: 70%; }
+.soundwave .bar:nth-child(8) { height: 25%; }
+
+/* ===== FOOTER (consistent across all slides) ===== */
+.footer {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 38px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 48px;
+  border-top: 1px solid var(--line);
+  background: var(--bg);
+}
+.footer .brand {
+  display: flex; align-items: center; gap: 8px;
+  font-family: var(--font-body); font-weight: 700; font-size: 11px;
+  letter-spacing: 1.5px; color: var(--primary); text-transform: uppercase;
+}
+.footer .brand .mark {
+  width: 18px; height: 18px; border-radius: 4px;
+  background: var(--primary); color: var(--accent);
+  display: inline-flex; align-items: center; justify-content: center;
+  font-family: var(--font-heading); font-weight: 900; font-size: 11px;
+}
+.footer .meta { font-family: var(--font-body); font-weight: 500; font-size: 11px; color: var(--muted); letter-spacing: 0.8px; }
+.footer .pageno { font-family: var(--font-num); font-weight: 700; color: var(--primary); font-size: 12px; }
+
+/* hidden speaker notes — never rendered visually */
+aside[data-notes].hidden { display: none !important; }
+
+/* utility */
+.flex { display: flex; }
+.col  { display: flex; flex-direction: column; }
+.gap-2 { gap: 8px; }  .gap-3 { gap: 12px; }  .gap-4 { gap: 16px; }  .gap-6 { gap: 24px; }  .gap-8 { gap: 32px; }
+.center { display: flex; align-items: center; justify-content: center; }
