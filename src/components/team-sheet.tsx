@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { X, Code2, Palette, TrendingUp, Mail, Globe, Cloud, Award } from "lucide-react";
+import { X, Code2, Palette, TrendingUp, Mail, Globe, Cloud, Award, Github } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -143,6 +143,15 @@ export function TeamSheet({ open, onClose }: { open: boolean; onClose: () => voi
               <Globe className="h-3.5 w-3.5 text-primary" />
               <span className="text-muted-foreground">warisan-suara.pages.dev</span>
             </div>
+            <a
+              href="https://github.com/hyperchainpro/Warisan-Suara"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 text-xs hover:text-primary transition-colors"
+            >
+              <Github className="h-3.5 w-3.5 text-primary" />
+              <span className="text-muted-foreground">github.com/hyperchainpro/Warisan-Suara</span>
+            </a>
           </div>
 
           <Button onClick={onClose} className="w-full bg-primary hover:bg-primary/90 text-sm h-9">
