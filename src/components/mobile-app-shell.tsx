@@ -19,6 +19,7 @@ import { AiTutorSection } from "@/components/sections/ai-tutor";
 import { OralTraditionsSection } from "@/components/sections/oral-traditions";
 import { ServiceWorkerRegister } from "@/components/sw-register";
 import { TeamSheet } from "@/components/team-sheet";
+import { PwaInstallPrompt } from "@/components/pwa-install-prompt";
 
 type TabId = "beranda" | "bahasa" | "rekam" | "belajar" | "arsip";
 
@@ -203,6 +204,9 @@ export function MobileAppShell() {
 
       {/* Team Info Sheet */}
       <TeamSheet open={teamOpen} onClose={() => setTeamOpen(false)} />
+
+      {/* PWA Install Prompt */}
+      <PwaInstallPrompt />
     </div>
   );
 }
