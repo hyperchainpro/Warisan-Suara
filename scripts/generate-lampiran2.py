@@ -23,16 +23,17 @@ CREAM = HexColor("#fdf8ef")
 DARK = HexColor("#2a1f18")
 LIGHT_BG = HexColor("#f8f0e8")
 
-# Styles
-s_title = ParagraphStyle("T", fontName="Helvetica-Bold", fontSize=26, textColor=white, alignment=TA_CENTER, leading=30)
-s_sub = ParagraphStyle("S", fontName="Helvetica", fontSize=13, textColor=white, alignment=TA_CENTER, leading=16)
+# Styles — dark text on light backgrounds (NO white on cream)
+s_title = ParagraphStyle("T", fontName="Helvetica-Bold", fontSize=28, textColor=MAROON, alignment=TA_CENTER, leading=34)
+s_sub = ParagraphStyle("S", fontName="Helvetica", fontSize=13, textColor=TERRACOTTA, alignment=TA_CENTER, leading=16)
 s_section = ParagraphStyle("SE", fontName="Helvetica-Bold", fontSize=16, textColor=white, backColor=TERRACOTTA, borderPadding=(6,10,6,10), spaceAfter=8, leading=20)
 s_h2 = ParagraphStyle("H2", fontName="Helvetica-Bold", fontSize=12, textColor=MAROON, spaceAfter=4, spaceBefore=8)
 s_body = ParagraphStyle("B", fontName="Helvetica", fontSize=10, textColor=DARK, alignment=TA_JUSTIFY, leading=14, spaceAfter=4)
 s_caption = ParagraphStyle("C", fontName="Helvetica-Bold", fontSize=10, textColor=TERRACOTTA, alignment=TA_CENTER, spaceAfter=2, spaceBefore=4)
 s_desc = ParagraphStyle("D", fontName="Helvetica", fontSize=9, textColor=DARK, alignment=TA_LEFT, leading=12, spaceAfter=4)
 s_tc = ParagraphStyle("TC", fontName="Helvetica", fontSize=9, textColor=DARK, leading=12)
-s_th = ParagraphStyle("TH", fontName="Helvetica-Bold", fontSize=9, textColor=white, alignment=TA_CENTER, leading=12)
+s_th = ParagraphStyle("TH", fontName="Helvetica-Bold", fontSize=9, textColor=white, alignment=TA_LEFT, leading=12)  # white on terracotta header cells
+s_th_label = ParagraphStyle("THL", fontName="Helvetica-Bold", fontSize=9, textColor=MAROON, alignment=TA_LEFT, leading=12)  # dark text for label column
 s_yt = ParagraphStyle("YT", fontName="Helvetica-Bold", fontSize=11, textColor=white, backColor=TERRACOTTA, alignment=TA_CENTER, borderPadding=(6,10,6,10), spaceBefore=8, spaceAfter=8)
 s_feat = ParagraphStyle("F", fontName="Helvetica", fontSize=9, textColor=MAROON, alignment=TA_LEFT, leading=12, leftIndent=8)
 
@@ -54,31 +55,84 @@ def page_dec(canvas, doc):
 
 def cover_dec(canvas, doc):
     canvas.saveState()
+    W, H = A4
+    # Full cream background
     canvas.setFillColor(CREAM)
-    canvas.rect(0, 0, A4[0], A4[1], fill=1, stroke=0)
-    # Top banner
+    canvas.rect(0, 0, W, H, fill=1, stroke=0)
+
+    # === TOP SECTION: terracotta banner with title area ===
+    top_h = 7*cm
     canvas.setFillColor(TERRACOTTA)
-    canvas.rect(0, A4[1]-4*cm, A4[0], 4*cm, fill=1, stroke=0)
+    canvas.rect(0, H - top_h, W, top_h, fill=1, stroke=0)
+    # Gold accent line below banner
     canvas.setFillColor(GOLD)
-    canvas.rect(0, A4[1]-4.2*cm, A4[0], 0.2*cm, fill=1, stroke=0)
-    # Bottom banner
-    canvas.setFillColor(MAROON)
-    canvas.rect(0, 0, A4[0], 2*cm, fill=1, stroke=0)
-    canvas.setFillColor(GOLD)
-    canvas.rect(0, 2*cm, A4[0], 0.2*cm, fill=1, stroke=0)
-    # Soundwave logo
-    cx, cy = A4[0]/2, A4[1]/2 + 0.5*cm
-    canvas.setStrokeColor(TERRACOTTA)
-    canvas.setLineWidth(3)
-    for i, h in enumerate([25, 45, 20, 40, 30]):
-        x = cx - 35 + i*17
-        canvas.line(x, cy-h/2, x, cy+h/2)
-    canvas.setFillColor(TERRACOTTA)
-    canvas.circle(cx, cy, 7, fill=1, stroke=0)
-    # Footer
-    canvas.setFont("Helvetica-Bold", 9)
+    canvas.rect(0, H - top_h - 0.15*cm, W, 0.15*cm, fill=1, stroke=0)
+
+    # === Decorative batik dots pattern in top banner ===
+    canvas.setFillColor(HexColor("#b86a3e"))  # lighter terracotta for dots
+    for row in range(3):
+        for col in range(12):
+            x = 1.5*cm + col * 1.5*cm + (row % 2) * 0.75*cm
+            y = H - 1.5*cm - row * 1.2*cm
+            if y < H - top_h + 0.5*cm:
+                continue
+            canvas.circle(x, y, 0.15*cm, fill=1, stroke=0)
+
+    # === Title text in top banner (white on terracotta — visible) ===
+    canvas.setFont("Helvetica-Bold", 32)
     canvas.setFillColor(white)
-    canvas.drawCentredString(cx, 1*cm, "BUDAYA GO! 2026 · Indonesia Cultural Power")
+    canvas.drawCentredString(W/2, H - 3.5*cm, "LAMPIRAN 2")
+    canvas.setFont("Helvetica", 14)
+    canvas.setFillColor(HexColor("#fdf0d5"))  # warm white
+    canvas.drawCentredString(W/2, H - 5*cm, "Bukti Produk dan Materi Presentasi")
+    canvas.setFont("Helvetica-Oblique", 10)
+    canvas.setFillColor(GOLD)
+    canvas.drawCentredString(W/2, H - 6*cm, "BUDAYA GO! 2026 · Indonesia Cultural Power")
+
+    # === Soundwave motif in center ===
+    cx, cy = W/2, H - top_h - 3*cm
+    canvas.setStrokeColor(TERRACOTTA)
+    canvas.setLineWidth(4)
+    waves = [(20, 30), (15, 55), (10, 25), (15, 50), (20, 35)]
+    total_w = sum(w for w, _ in waves) + 4 * 0.8*cm
+    x = cx - total_w/2
+    for w, h in waves:
+        canvas.line(x + w/2, cy - h/2, x + w/2, cy + h/2)
+        x += w + 0.8*cm
+    canvas.setFillColor(TERRACOTTA)
+    canvas.circle(cx, cy, 8, fill=1, stroke=0)
+    canvas.setFillColor(GOLD)
+    canvas.circle(cx, cy, 4, fill=1, stroke=0)
+
+    # === Product name badge (moved up, no overlap with table) ===
+    # Badge positioned right below soundwave, above the info table
+    canvas.setFillColor(MAROON)
+    badge_y = H - top_h - 4.5*cm
+    canvas.roundRect(4*cm, badge_y, W - 8*cm, 1*cm, 0.25*cm, fill=1, stroke=0)
+    canvas.setFont("Helvetica-Bold", 10)
+    canvas.setFillColor(GOLD)
+    canvas.drawCentredString(W/2, badge_y + 0.6*cm, "WARISAN SUARA")
+    canvas.setFont("Helvetica", 7)
+    canvas.setFillColor(HexColor("#fdf0d5"))
+    canvas.drawCentredString(W/2, badge_y + 0.2*cm, "Platform AI Pelestarian Bahasa & Tradisi Lisan Nusantara")
+
+    # === BOTTOM SECTION: maroon footer ===
+    canvas.setFillColor(MAROON)
+    canvas.rect(0, 0, W, 2.5*cm, fill=1, stroke=0)
+    canvas.setFillColor(GOLD)
+    canvas.rect(0, 2.5*cm, W, 0.15*cm, fill=1, stroke=0)
+
+    # Team info in footer
+    canvas.setFont("Helvetica-Bold", 8)
+    canvas.setFillColor(white)
+    canvas.drawCentredString(W/2, 1.8*cm, "Febri Rizki (Pengembangan Produk) · Oki Handinata (Kebudayaan) · Martha Martinni (Ekonomi)")
+    canvas.setFont("Helvetica", 7)
+    canvas.setFillColor(HexColor("#fdf0d5"))
+    canvas.drawCentredString(W/2, 1.2*cm, "hyperchain.project@gmail.com · warisan-suara.pages.dev · youtu.be/UrVE7wZEo2U")
+    canvas.setFont("Helvetica-Oblique", 7)
+    canvas.setFillColor(GOLD)
+    canvas.drawCentredString(W/2, 0.5*cm, "Kompetisi Inovasi Budaya Indonesia · Kementerian Kebudayaan RI 2026")
+
     canvas.restoreState()
 
 doc = BaseDocTemplate(OUT, pagesize=A4, topMargin=1.8*cm, bottomMargin=1.8*cm, leftMargin=2*cm, rightMargin=2*cm,
@@ -93,26 +147,25 @@ doc.addPageTemplates([
 
 story = []
 
-# COVER
-story.append(Spacer(1, 0.5*cm))
-story.append(P("LAMPIRAN 2", s_title))
-story.append(Spacer(1, 0.2*cm))
-story.append(P("Bukti Produk dan Materi Presentasi", s_sub))
-story.append(Spacer(1, 1.5*cm))
+# COVER (title drawn by cover_dec, story only has info table)
+# Push table down to avoid overlap with badge (badge at H-top_h-4.5cm to -3.5cm)
+# Cover frame starts at 2.5cm from bottom, height A4[1]-7cm
+# Need to push table past the badge area
+story.append(Spacer(1, 7.5*cm))  # push table below badge
 
 cover_info = [
-    [P("Produk", s_th), P("<b>WARISAN SUARA</b> — Platform AI Pelestarian Bahasa & Tradisi Lisan Nusantara", s_tc)],
-    [P("Kategori", s_th), P("Inovasi Digital · Sub-tema #4 Pembelajaran dan Edukasi Digital Berbasis Budaya", s_tc)],
-    [P("Tim", s_th), P("<b>Febri Rizki, S.Si., M.Si.</b> (Ketua — Pengembangan Produk)<br/><b>Oki Handinata, S.Si.</b> (Anggota — Kebudayaan)<br/><b>Martha Martinni, S.Si.</b> (Anggota — Ekonomi)", s_tc)],
-    [P("Email", s_th), P("hyperchain.project@gmail.com", s_tc)],
-    [P("Demo", s_th), P("warisan-suara.pages.dev", s_tc)],
-    [P("GitHub", s_th), P("github.com/hyperchainpro/Warisan-Suara", s_tc)],
-    [P("Video", s_th), P("youtu.be/UrVE7wZEo2U", s_tc)],
+    [P("Produk", s_th_label), P("<b>WARISAN SUARA</b> — Platform AI Pelestarian Bahasa & Tradisi Lisan Nusantara", s_tc)],
+    [P("Kategori", s_th_label), P("Inovasi Digital · Sub-tema #4 Pembelajaran dan Edukasi Digital Berbasis Budaya", s_tc)],
+    [P("Tim", s_th_label), P("<b>Febri Rizki, S.Si., M.Si.</b> (Ketua — Pengembangan Produk)<br/><b>Oki Handinata, S.Si.</b> (Anggota — Kebudayaan)<br/><b>Martha Martinni, S.Si.</b> (Anggota — Ekonomi)", s_tc)],
+    [P("Email", s_th_label), P("hyperchain.project@gmail.com", s_tc)],
+    [P("Demo", s_th_label), P("warisan-suara.pages.dev", s_tc)],
+    [P("GitHub", s_th_label), P("github.com/hyperchainpro/Warisan-Suara", s_tc)],
+    [P("Video", s_th_label), P("youtu.be/UrVE7wZEo2U", s_tc)],
 ]
 ct = Table(cover_info, colWidths=[3*cm, 12.5*cm])
 ct.setStyle(TableStyle([
-    ("GRID", (0,0), (-1,-1), 0.5, HexColor("#dddddd")),
-    ("BACKGROUND", (0,0), (0,-1), LIGHT_BG),
+    ("GRID", (0,0), (-1,-1), 0.5, HexColor("#c89545")),
+    ("BACKGROUND", (0,0), (0,-1), HexColor("#e8d5b8")),  # warm beige for label column
     ("VALIGN", (0,0), (-1,-1), "TOP"),
     ("TOPPADDING", (0,0), (-1,-1), 6),
     ("BOTTOMPADDING", (0,0), (-1,-1), 6),
@@ -129,13 +182,13 @@ story.append(Spacer(1, 0.3*cm))
 
 # Links table
 links = [
-    [P("Live Demo", s_th), P("https://warisan-suara.pages.dev", s_tc)],
-    [P("Source Code", s_th), P("github.com/hyperchainpro/Warisan-Suara", s_tc)],
-    [P("API Health", s_th), P("warisan-suara.pages.dev/api/health", s_tc)],
-    [P("Platform", s_th), P("Cloudflare Pages (free tier) + D1 + Workers AI", s_tc)],
+    [P("Live Demo", s_th_label), P("https://warisan-suara.pages.dev", s_tc)],
+    [P("Source Code", s_th_label), P("github.com/hyperchainpro/Warisan-Suara", s_tc)],
+    [P("API Health", s_th_label), P("warisan-suara.pages.dev/api/health", s_tc)],
+    [P("Platform", s_th_label), P("Cloudflare Pages (free tier) + D1 + Workers AI", s_tc)],
 ]
 lt = Table(links, colWidths=[3*cm, 12.5*cm])
-lt.setStyle(TableStyle([("GRID",(0,0),(-1,-1),0.5,HexColor("#ddd")),("BACKGROUND",(0,0),(0,-1),LIGHT_BG),("VALIGN",(0,0),(-1,-1),"MIDDLE"),("TOPPADDING",(0,0),(-1,-1),4),("BOTTOMPADDING",(0,0),(-1,-1),4),("LEFTPADDING",(0,0),(-1,-1),8)]))
+lt.setStyle(TableStyle([("GRID",(0,0),(-1,-1),0.5,HexColor("#ddd")),("BACKGROUND",(0,0),(0,-1),HexColor("#e8d5b8")),("VALIGN",(0,0),(-1,-1),"MIDDLE"),("TOPPADDING",(0,0),(-1,-1),4),("BOTTOMPADDING",(0,0),(-1,-1),4),("LEFTPADDING",(0,0),(-1,-1),8)]))
 story.append(lt)
 story.append(Spacer(1, 0.4*cm))
 story.append(P("Tangkapan Layar Antarmuka (10 Mockup)", s_h2))
@@ -191,14 +244,14 @@ story.append(P("Video showcase berdurasi 4 menit 9 detik (sesuai syarat Juknis 3
 story.append(Spacer(1, 0.3*cm))
 
 vid = [
-    [P("YouTube", s_th), P("https://youtu.be/UrVE7wZEo2U", s_tc)],
-    [P("Durasi", s_th), P("4:09 menit (syarat Juknis: 3-5 menit)", s_tc)],
-    [P("Narasi", s_th), P("Bahasa Indonesia, suara laki-laki dewasa professional", s_tc)],
-    [P("Resolusi", s_th), P("1280x720 (16:9), H.264 + AAC, 4.6 MB", s_tc)],
-    [P("Scene", s_th), P("16 scene + outro dengan 10 mockup aplikasi", s_tc)],
+    [P("YouTube", s_th_label), P("https://youtu.be/UrVE7wZEo2U", s_tc)],
+    [P("Durasi", s_th_label), P("4:09 menit (syarat Juknis: 3-5 menit)", s_tc)],
+    [P("Narasi", s_th_label), P("Bahasa Indonesia, suara laki-laki dewasa professional", s_tc)],
+    [P("Resolusi", s_th_label), P("1280x720 (16:9), H.264 + AAC, 4.6 MB", s_tc)],
+    [P("Scene", s_th_label), P("16 scene + outro dengan 10 mockup aplikasi", s_tc)],
 ]
 vt = Table(vid, colWidths=[3*cm, 12.5*cm])
-vt.setStyle(TableStyle([("GRID",(0,0),(-1,-1),0.5,HexColor("#ddd")),("BACKGROUND",(0,0),(0,-1),LIGHT_BG),("VALIGN",(0,0),(-1,-1),"MIDDLE"),("TOPPADDING",(0,0),(-1,-1),4),("BOTTOMPADDING",(0,0),(-1,-1),4),("LEFTPADDING",(0,0),(-1,-1),8)]))
+vt.setStyle(TableStyle([("GRID",(0,0),(-1,-1),0.5,HexColor("#ddd")),("BACKGROUND",(0,0),(0,-1),HexColor("#e8d5b8")),("VALIGN",(0,0),(-1,-1),"MIDDLE"),("TOPPADDING",(0,0),(-1,-1),4),("BOTTOMPADDING",(0,0),(-1,-1),4),("LEFTPADDING",(0,0),(-1,-1),8)]))
 story.append(vt)
 story.append(Spacer(1, 0.3*cm))
 story.append(P("Akses Video Showcase: youtu.be/UrVE7wZEo2U", s_yt))
@@ -207,7 +260,7 @@ story.append(Spacer(1, 0.2*cm))
 # 6 poin konten
 story.append(P("Konten Video (6 Poin sesuai Juknis)", s_h2))
 content_data = [
-    [P("No", s_th), P("Poin Konten", s_th), P("Scene", s_th)],
+    [P("No", s_th), P("Poin Konten", s_th), P("Scene", s_th_label)],
     [P("1", s_tc), P("Pengenalan Produk: Nama, konsep, fungsi utama, unsur kebudayaan", s_tc), P("1-3", s_tc)],
     [P("2", s_tc), P("Demonstrasi Produk: Peragaan cara kerja, fitur, proses penggunaan", s_tc), P("4-13", s_tc)],
     [P("3", s_tc), P("Kegunaan dan Manfaat: Nilai guna bagi pengguna, pelaku budaya, masyarakat", s_tc), P("4, 9, 11", s_tc)],
@@ -226,13 +279,13 @@ story.append(P("Slide deck presentasi berisi 10 slide (format 16:9 widescreen) u
 story.append(Spacer(1, 0.3*cm))
 
 si = [
-    [P("Format", s_th), P("PDF 16:9 widescreen (1280x720)", s_tc)],
-    [P("Jumlah", s_th), P("10 slide", s_tc)],
-    [P("Palette", s_th), P("Batik earthy (terracotta, gold, maroon, cream)", s_tc)],
-    [P("File", s_th), P("Slide-Deck-Warisan-Suara-BUDAYAGO2026.pdf (820 KB)", s_tc)],
+    [P("Format", s_th_label), P("PDF 16:9 widescreen (1280x720)", s_tc)],
+    [P("Jumlah", s_th_label), P("10 slide", s_tc)],
+    [P("Palette", s_th_label), P("Batik earthy (terracotta, gold, maroon, cream)", s_tc)],
+    [P("File", s_th_label), P("Slide-Deck-Warisan-Suara-BUDAYAGO2026.pdf (820 KB)", s_tc)],
 ]
 st = Table(si, colWidths=[3*cm, 12.5*cm])
-st.setStyle(TableStyle([("GRID",(0,0),(-1,-1),0.5,HexColor("#ddd")),("BACKGROUND",(0,0),(0,-1),LIGHT_BG),("VALIGN",(0,0),(-1,-1),"MIDDLE"),("TOPPADDING",(0,0),(-1,-1),4),("BOTTOMPADDING",(0,0),(-1,-1),4),("LEFTPADDING",(0,0),(-1,-1),8)]))
+st.setStyle(TableStyle([("GRID",(0,0),(-1,-1),0.5,HexColor("#ddd")),("BACKGROUND",(0,0),(0,-1),HexColor("#e8d5b8")),("VALIGN",(0,0),(-1,-1),"MIDDLE"),("TOPPADDING",(0,0),(-1,-1),4),("BOTTOMPADDING",(0,0),(-1,-1),4),("LEFTPADDING",(0,0),(-1,-1),8)]))
 story.append(st)
 story.append(Spacer(1, 0.3*cm))
 
