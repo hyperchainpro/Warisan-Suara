@@ -448,7 +448,7 @@ def header_footer(canvas, doc):
     canvas.setFont('FreeSans', 7.5)
     canvas.setFillColor(TEXT_MUTED)
     canvas.drawString(LEFT_MARGIN, 14*mm,
-                      'Febri Rizki, S.Si., M.Si.  \u00b7  warisansuara.id@gmail.com')
+                      'Febri Rizki, S.Si., M.Si.  \u00b7  hyperchain.project@gmail.com')
     page_num = canvas.getPageNumber()
     canvas.drawRightString(PAGE_W - RIGHT_MARGIN, 14*mm,
                            'Halaman %d' % page_num)
@@ -492,7 +492,7 @@ story.append(std_table(
         ['Kategori', 'Inovasi Digital'],
         ['Sub-tema', '#4 Pembelajaran dan Edukasi Digital Berbasis Budaya (juga menyentuh #1 Solusi Digital untuk Industri Budaya)'],
         ['Asal Daerah / Negara', 'Indonesia'],
-        ['Email Korespondensi', 'warisansuara.id@gmail.com'],
+        ['Email Korespondensi', 'hyperchain.project@gmail.com'],
         ['Tahun Pengajuan', '2026'],
     ],
     col_ratios=[0.32, 0.68],
@@ -501,9 +501,9 @@ story.append(Spacer(1, 12))
 story.append(std_table(
     header=['Peran Tim', 'Nama Lengkap', 'Tanggung Jawab Utama'],
     rows=[
-        ['Ketua', 'Febri Rizki, S.Si., M.Si.', 'AI Engineer dan Web App Developer — arsitektur sistem, model ASR/TTS, pengembangan Next.js 16'],
-        ['Anggota 1', 'Oki Handinata, S.Si.', 'UI/UX Designer — desain antarmuka mobile 5-tab bottom navigation, palet warna earthy batik (terracotta, gold, maroon, cream), komponen shadcn/ui, optimasi alur pengguna, mockup dan visual design'],
-        ['Anggota 2', 'Martha Martinni, S.Si.', 'Strategi Startup & Model Bisnis (maksimal 3 orang) — Business Model Canvas, kemitraan B2G/B2B, riset pengguna, model pendapatan, ekspansi ASEAN'],
+        ['Ketua', 'Febri Rizki, S.Si., M.Si.', 'Pengembangan Produk — arsitektur produk digital end-to-end, integrasi model ASR/LLM/TTS pada Cloudflare Workers AI, pengembangan Next.js 16 + Prisma + D1, koordinasi rilis MVP'],
+        ['Anggota 1', 'Oki Handinata, S.Si.', 'Kebudayaan — substansi kebudayaan dan dokumentasi tradisi lisan, kurasi 10 bahasa daerah dan 20 tradisi lisan, kemitraan komunitas adat, protokol FPIC, validasi konteks budaya pada setiap modul'],
+        ['Anggota 2', 'Martha Martinni, S.Si.', 'Ekonomi — konteks ekonomi dan model bisnis, Business Model Canvas, kemitraan B2G/B2B sekolah dan dinas kebudayaan, riset pengguna, model pendapatan, ekspansi pasar ASEAN serumpun'],
     ],
     col_ratios=[0.18, 0.32, 0.50],
 ))
@@ -913,7 +913,7 @@ story.append(PageBreak())
 story.extend(h2('8.5 Galeri Mockup Aplikasi Mobile WARISAN SUARA'))
 story.append(para_nf(
     'Bagian ini menyajikan cuplikan layar (mockup) purwarupa aplikasi mobile WARISAN SUARA '
-    'yang telah dirancang oleh UI/UX Designer tim, Oki Handinata. Aplikasi diimplementasikan '
+    'yang telah dirancang oleh tim dengan koordinasi kepakaran Kebudayaan (Oki Handinata) untuk substansi dan Pengembangan Produk (Febri Rizki) untuk implementasi teknis. Aplikasi diimplementasikan '
     'sebagai Progressive Web App dengan bottom tab navigation lima tab (Beranda, Bahasa, Rekam, '
     'Belajar, Arsip) dan mengacu pada palet warna earthy batik (terracotta, gold, maroon, cream) '
     'yang konsisten dengan identitas visual budaya Nusantara. Mockup berikut memperlihatkan '
@@ -1119,7 +1119,7 @@ story.append(para_nf(
     'dapat digunakan dalam kondisi jaringan lemah. Bottom tab navigation memudahkan '
     'perpindahan konteks antara menjelajah bahasa, merekam suara, belajar modul, dan '
     'mengakses arsip tanpa harus kembali ke layar utama. Seluruh desain UX mobile dirancang '
-    'oleh UI/UX Designer tim (Oki Handinata) menggunakan Figma sebagai tool desain dan '
+    'oleh tim dengan kepakaran Kebudayaan (Oki Handinata) sebagai pemilik substansi budaya dan kurator tradisi lisan, menggunakan Figma sebagai tool desain dan '
     'diimplementasikan dengan komponen shadcn/ui yang disesuaikan dengan palet warna earthy '
     'batik (terracotta, gold, maroon, cream). Bottom tab menggunakan komponen NavigationMenu '
     'dengan icon Lucide dan label teks, serta menyediakan feedback haptic ringan pada '
@@ -1413,7 +1413,10 @@ story.append(para_nf(
     'pengembangan aplikasi web full-stack, fine-tuning model ASR untuk bahasa sumber daya '
     'rendah, serta kemitraan dengan komunitas adat di lima wilayah dokumentasi awal. Bukti '
     'validasi juga dilengkapi dengan screenshot UI, link GitHub repository (private), dan '
-    'dokumentasi teknis arsitektur.'
+    'dokumentasi teknis arsitektur. Video showcase platform yang merangkum seluruh alur '
+    'penggunaan dalam presentasi visual 3 menit telah diterbitkan publik dan dapat diakses '
+    'oleh Dewan Juri pada tautan YouTube berikut: '
+    'https://youtu.be/UrVE7wZEo2U (Video Showcase WARISAN SUARA).'
 ))
 
 story.append(PageBreak())
@@ -1624,27 +1627,45 @@ story.append(para_nf(
     'status UNESCO. Semua aset visual tersedia pada repository GitHub privat tim dan dapat '
     'diberikan akses kepada juri BUDAYA GO! 2026 atas permintaan.'
 ))
+story.append(Spacer(1, 6))
+story.append(metrics_row([
+    ('Video Showcase', 'YouTube Publik'),
+    ('Durasi', '3 Menit'),
+    ('Status', 'Live'),
+    ('Akses', 'Tanpa Login'),
+]))
+story.append(Spacer(1, 4))
+story.append(para_nf(
+    'Lampiran 2B — Video Showcase: Video showcase publik WARISAN SUARA telah diterbitkan '
+    'pada YouTube dan dapat langsung diakses oleh Dewan Juri BUDAYA GO! 2026 tanpa permintaan '
+    'akses khusus. Video berdurasi 3 menit tersebut merangkum visi produk, demonstrasi lima '
+    'fitur inti (Peta Bahasa, Studio Rekam, Modul Belajar, Tutor AI, Arsip Tradisi), '
+    'penjelasan stack Cloudflare edge, dan roadmap pengembangan. Tautan resmi Video Showcase: '
+    'https://youtu.be/UrVE7wZEo2U (channel Hyperchain Project, unlisted-public).'
+))
 
 story.extend(h2('18.3 Tautan Demo dan Akses'))
 story.append(std_table(
     header=['Aset', 'Tautan / Akses', 'Keterangan'],
     rows=[
         ['Demo Live Platform', 'https://warisan-suara.pages.dev', 'Akses publik purwarupa fungsional (live deploy Cloudflare Pages)'],
-        ['Repository GitHub', 'github.com/warisansuara (privat)', 'Akses juri atas permintaan via email korespondensi'],
-        ['Video Demo', 'Tautan YouTube privat (3 menit)', 'Akses juri atas permintaan via email korespondensi'],
+        ['Repository GitHub', 'github.com/hyperchainpro/Warisan-Suara', 'Akses juri atas permintaan via email korespondensi'],
+        ['Video Showcase (Lampiran 2B)', 'https://youtu.be/UrVE7wZEo2U', 'Video publik YouTube 3 menit — akses tanpa login'],
         ['Dokumentasi Teknis', 'docs.warisansuara.id (subdomain)', 'Arsitektur, API, dan panduan integrasi'],
-        ['Email Korespondensi', 'warisansuara.id@gmail.com', 'Ketua: Febri Rizki, S.Si., M.Si.'],
+        ['Email Korespondensi', 'hyperchain.project@gmail.com', 'Ketua: Febri Rizki, S.Si., M.Si.'],
     ],
-    col_ratios=[0.25, 0.40, 0.35],
+    col_ratios=[0.27, 0.38, 0.35],
 ))
 
 story.extend(h2('18.4 Lampiran Visual Aplikasi'))
 story.append(para_nf(
     'Sebanyak sepuluh mockup aplikasi mobile WARISAN SUARA telah disisipkan strategis sepanjang '
-    'proposal ini untuk memberikan bukti visual kesiapan produk. Mockup dirancang oleh UI/UX '
-    'Designer tim, Oki Handinata, dengan palet warna earthy batik (terracotta, gold, maroon, '
-    'cream) dan komponen shadcn/ui. Berikut adalah katalog lengkap lampiran visual yang dapat '
-    'dijuri telusuri berdasarkan nomor gambar pada tubuh proposal.'
+    'proposal ini untuk memberikan bukti visual kesiapan produk. Mockup dirancang oleh tim '
+    'dengan koordinasi kepakaran Kebudayaan (Oki Handinata) sebagai pemilik substansi budaya '
+    'dan Pengembangan Produk (Febri Rizki) sebagai pengembang teknis, dengan palet warna '
+    'earthy batik (terracotta, gold, maroon, cream) dan komponen shadcn/ui. Berikut adalah '
+    'katalog lengkap lampiran visual yang dapat dijuri telusuri berdasarkan nomor gambar '
+    'pada tubuh proposal.'
 ))
 story.append(std_table(
     header=['No. Gambar', 'Nama Mockup', 'Lokasi dalam Proposal', 'Deskripsi Singkat'],
